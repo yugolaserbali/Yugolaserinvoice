@@ -40,7 +40,7 @@
             border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px;
             text-align: center; backdrop-filter: blur(10px);
         }
-        .login-box h2 { color: var(--primary); margin-top: 0; margin-bottom: 5px; letter-spacing: 1px;}
+        .login-box h2 { color: var(--primary); margin-top: 0; margin-bottom: 25px; letter-spacing: 1px;}
         .login-box input { margin-bottom: 15px; }
 
         /* MAIN APP WRAPPER */
@@ -97,6 +97,8 @@
         .btn-secondary { background: #334155; }
         .btn-secondary:hover { background: #475569; box-shadow: none; }
         .btn-success { background: linear-gradient(135deg, var(--success), #059669); }
+        .btn-success-small { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid #10b981; padding: 5px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; transition:0.3s; }
+        .btn-success-small:hover { background: #10b981; color: white; }
         .btn-wa { background: linear-gradient(135deg, #25D366, #128C7E); }
         .btn-danger { background-color: rgba(239, 68, 68, 0.2); color: #f87171; padding: 5px 10px; font-size: 0.75rem; border-radius: 4px; border:1px solid #ef4444; cursor: pointer; transition:0.3s;}
         .btn-danger:hover { background: #ef4444; color:white; }
@@ -180,7 +182,7 @@
         .badge-paid { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
         .badge-dp { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
 
-        /* CUSTOMER MODAL */
+        /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; width: 95%; max-width: 800px; max-height: 85vh; overflow-y: auto; color: white;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;}
@@ -219,7 +221,7 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN - BERSIH DARI TOMBOL DAFTAR -->
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
     <div class="login-box">
         <h2 style="font-weight: 900;">YUGO <span style="color:white">LASER</span> PRO</h2>
@@ -272,16 +274,20 @@
 
                 <h3 style="display: flex; justify-content: space-between; align-items: center;">
                     Data Klien 
-                    <button class="btn-small btn-secondary" onclick="openClientModal()" style="font-size: 0.7rem;">👥 Lihat & Kelola Data</button>
+                    <button class="btn-small btn-secondary" onclick="openClientModal()" style="font-size: 0.7rem;">👥 Kelola Klien</button>
                 </h3>
                 <div class="form-group">
-                    <input type="text" id="inp-client-name" placeholder="Ketik nama klien..." autocomplete="off" oninput="updatePreview()">
+                    <input type="text" id="inp-client-name" placeholder="Ketik 3 huruf nama klien..." autocomplete="off" oninput="updatePreview()">
                     <div id="autocomplete-list" class="autocomplete-items"></div>
                 </div>
                 <div class="form-group"><input type="tel" id="inp-client-phone" placeholder="No. HP / WA (Cth: 0812...)" oninput="updatePreview()"></div>
                 <div class="form-group"><input type="text" id="inp-client-addr" placeholder="Alamat / Lokasi" oninput="updatePreview()"></div>
 
-                <h3 style="display: flex; justify-content: space-between;">Item Pekerjaan</h3>
+                <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                    Item Pekerjaan
+                    <button class="btn-small btn-secondary" onclick="openItemModal()" style="font-size: 0.7rem;">📦 Lihat Katalog</button>
+                </h3>
+                
                 <div id="items-container"></div>
                 <button class="btn btn-secondary" onclick="addItemRow()">➕ Tambah Item</button>
 
@@ -339,10 +345,9 @@
                             </div>
                             <div class="meta-data">
                                 <table class="meta-table">
-    <tr><td>NO. REF</td><td id="prev-est-no" style="font-weight: 700; color: #000;">---</td></tr>
-    <tr><td>TANGGAL</td><td id="prev-date" style="font-weight: 700; color: #000;">---</td></tr>
-</table>
-
+                                    <tr><td>NO. REF</td><td id="prev-est-no" style="font-weight: 700; color: #000;">---</td></tr>
+                                    <tr><td>TANGGAL</td><td id="prev-date" style="font-weight: 700; color: #000;">---</td></tr>
+                                </table>
                             </div>
                         </div>
 
@@ -477,6 +482,32 @@
     </div>
 </div>
 
+<!-- MODAL KATALOG BARANG -->
+<div id="item-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin:0; color:var(--primary);">Katalog Barang & Jasa</h2>
+            <button class="close-btn" onclick="closeItemModal()">×</button>
+        </div>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 0;">
+            Katalog ini akan otomatis muncul sebagai saran saat Anda mengetik di kolom nama barang. Tambahkan barang baru menggunakan tombol "💾 Simpan ke Katalog" saat membuat tagihan.
+        </p>
+        <div class="table-responsive">
+            <table class="data-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Nama Barang/Jasa</th>
+                        <th>Harga Standar</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="item-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script>
     // ==========================================
     // 1. FIREBASE CONFIGURATION
@@ -510,7 +541,10 @@
             renderItems();
             fitPaperToScreen();
             setupClientAutocomplete();
-            if(db) fetchClients(); 
+            if(db) {
+                fetchClients(); 
+                fetchItemsCatalog(); // Ambil data katalog barang saat login
+            }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
@@ -538,6 +572,8 @@
     // ==========================================
     let items = [{ name: '', details: '', qty: '', price: '' }];
     let clientsData = []; 
+    let itemLibraryData = []; // State untuk menampung katalog barang
+    
     const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
     function switchTab(tab) {
@@ -705,16 +741,14 @@
         if (type === 'Invoice') {
             document.getElementById('prev-doc-title').innerText = "INVOICE";
             document.getElementById('prev-doc-subtitle').innerText = "Official Receipt";
-            // Tampilkan Input DP
             document.getElementById('dp-title-section').style.display = 'block';
             document.getElementById('dp-container').style.display = 'block';
         } else {
             document.getElementById('prev-doc-title').innerText = "ESTIMATE";
             document.getElementById('prev-doc-subtitle').innerText = "Official Quote";
-            // Sembunyikan Input DP untuk Estimate
             document.getElementById('dp-title-section').style.display = 'none';
             document.getElementById('dp-container').style.display = 'none';
-            document.getElementById('inp-dp').value = ''; // Reset DP
+            document.getElementById('inp-dp').value = ''; 
         }
         generateRandomDocNo();
         updatePreview();
@@ -736,9 +770,15 @@
             card.innerHTML = `
                 <div class="item-card-header">
                     <span style="font-weight:bold; color:var(--primary)">Item ${idx + 1}</span>
-                    <button class="btn-danger" onclick="deleteItem(${idx})">Hapus</button>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-success-small" onclick="saveItemToCatalog(${idx})" title="Simpan sebagai Preset">💾 Simpan ke Katalog</button>
+                        <button class="btn-danger" onclick="deleteItem(${idx})">Hapus</button>
+                    </div>
                 </div>
-                <div class="form-group"><input type="text" placeholder="Nama Barang / Jasa" value="${item.name}" oninput="updateItem(${idx}, 'name', this.value)"></div>
+                <div class="form-group" style="position:relative;">
+                    <input type="text" id="inp-item-name-${idx}" placeholder="Ketik 3 huruf nama barang / jasa..." value="${item.name}" autocomplete="off" oninput="handleItemAutocomplete(${idx}, this.value)">
+                    <div id="autocomplete-item-${idx}" class="autocomplete-items"></div>
+                </div>
                 <div class="form-group"><textarea placeholder="Catatan/Spesifikasi (Opsional)..." rows="1" oninput="updateItem(${idx}, 'details', this.value)">${item.details}</textarea></div>
                 <div class="item-row-grid">
                     <div><label>Qty</label><input type="number" placeholder="1" value="${item.qty}" oninput="updateItem(${idx}, 'qty', this.value)"></div>
@@ -787,12 +827,11 @@
         const taxRp = (subtotal - disc) * (taxPct / 100);
         const grand = (subtotal - disc) + taxRp;
 
-        // DP Logic
         const isInvoice = document.getElementById('inp-doc-type').value === 'Invoice';
         const dpStr = document.getElementById('inp-dp').value;
         const dp = dpStr === '' ? 0 : (parseFloat(dpStr) || 0);
         let sisa = grand - dp;
-        if(sisa < 0) sisa = 0; // Cegah minus
+        if(sisa < 0) sisa = 0;
         
         const isPaid = (dp >= grand && grand > 0);
 
@@ -808,7 +847,6 @@
         document.getElementById('row-discount').style.display = disc > 0 ? 'flex' : 'none';
         document.getElementById('row-tax').style.display = taxPct > 0 ? 'flex' : 'none';
 
-        // Tampilkan Row DP dan Sisa hanya jika jenisnya Invoice dan ada DP
         if (isInvoice && dp > 0 && !isPaid) {
             document.getElementById('row-dp').style.display = 'flex';
             document.getElementById('row-sisa').style.display = 'flex';
@@ -817,7 +855,6 @@
             document.getElementById('row-sisa').style.display = 'none';
         }
 
-        // Cap Lunas
         document.getElementById('stamp-lunas').style.display = (isInvoice && isPaid) ? 'block' : 'none';
 
         const noRefNow = document.getElementById('inp-est-no').value;
@@ -826,8 +863,10 @@
     }
 
     // ==========================================
-    // 4. FIREBASE AUTOCOMPLETE & SAVE
+    // 4. FIREBASE AUTOCOMPLETE CLIENT & ITEMS
     // ==========================================
+    
+    // --- Autocomplete Klien ---
     function setupClientAutocomplete() {
         const input = document.getElementById("inp-client-name");
         input.addEventListener("input", function(e) {
@@ -851,9 +890,6 @@
                 }
             });
         });
-        document.addEventListener("click", function (e) {
-            if(e.target.id !== "inp-client-name") document.getElementById("autocomplete-list").innerHTML = "";
-        });
     }
 
     async function fetchClients() {
@@ -864,6 +900,107 @@
         } catch(e) { console.error("Gagal load klien", e); }
     }
 
+    // --- Autocomplete & Manajemen Katalog Barang ---
+    async function fetchItemsCatalog() {
+        if(!db) return;
+        try {
+            const snapshot = await db.collection("items").get();
+            itemLibraryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch(e) { console.error("Gagal load katalog barang", e); }
+    }
+
+    function handleItemAutocomplete(idx, val) {
+        items[idx].name = val;
+        updatePreview();
+        
+        const list = document.getElementById(`autocomplete-item-${idx}`);
+        list.innerHTML = "";
+        if (!val || val.length < 3) return; // Minimal ketik 3 huruf untuk cari barang
+
+        itemLibraryData.forEach(catalogItem => {
+            if (catalogItem.name.toLowerCase().includes(val.toLowerCase())) {
+                const div = document.createElement("div");
+                div.innerHTML = `<strong style="color:var(--primary)">${catalogItem.name}</strong> - ${formatRp(catalogItem.price)}`;
+                div.addEventListener("click", function() {
+                    items[idx].name = catalogItem.name;
+                    items[idx].details = catalogItem.details || '';
+                    items[idx].price = catalogItem.price || '';
+                    renderItems(); 
+                    list.innerHTML = "";
+                });
+                list.appendChild(div);
+            }
+        });
+    }
+
+    async function saveItemToCatalog(idx) {
+        const item = items[idx];
+        if(!item.name) return alert("Nama barang/jasa wajib diisi sebelum menyimpan ke katalog!");
+        
+        const id = item.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const payload = {
+            name: item.name,
+            details: item.details || '',
+            price: parseFloat(item.price) || 0
+        };
+        
+        try {
+            await db.collection("items").doc(id).set(payload, { merge: true });
+            alert(`Barang "${item.name}" berhasil disimpan sebagai Preset!`);
+            fetchItemsCatalog(); // Refresh data katalog di latar belakang
+        } catch(e) {
+            alert("Gagal menyimpan barang: " + e.message);
+        }
+    }
+
+    function openItemModal() {
+        const modal = document.getElementById('item-modal');
+        const tbody = document.getElementById('item-table-body');
+        tbody.innerHTML = '';
+        
+        if (itemLibraryData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Katalog masih kosong. Silakan simpan barang dari menu utama.</td></tr>';
+        } else {
+            itemLibraryData.forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong style="color: var(--primary);">${c.name}</strong><br><small style="color: #94a3b8;">${c.details || '-'}</small></td>
+                        <td>${formatRp(c.price)}</td>
+                        <td>
+                            <button class="btn-small btn-danger" onclick="deleteCatalogItem('${c.id}')">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        modal.style.display = 'flex';
+    }
+    
+    function closeItemModal() { document.getElementById('item-modal').style.display = 'none'; }
+    
+    async function deleteCatalogItem(id) {
+        if(confirm("Apakah Anda yakin ingin menghapus barang ini dari katalog?")) {
+            try {
+                await db.collection("items").doc(id).delete();
+                await fetchItemsCatalog();
+                openItemModal(); // Refresh modal
+            } catch(e) { alert("Gagal menghapus barang."); }
+        }
+    }
+
+    // Menutup autocomplete jika mengklik area lain
+    document.addEventListener("click", function (e) {
+        if(e.target.id !== "inp-client-name") {
+            const cList = document.getElementById("autocomplete-list");
+            if(cList) cList.innerHTML = "";
+        }
+        if(!e.target.id.startsWith("inp-item-name-")) {
+            const lists = document.querySelectorAll('[id^="autocomplete-item-"]');
+            lists.forEach(l => l.innerHTML = "");
+        }
+    });
+
+    // --- Simpan Invoice ke Database ---
     async function saveDocumentToDB() {
         if(!db) return alert("Firebase belum terhubung.");
         
@@ -874,7 +1011,6 @@
         const dDate = document.getElementById('inp-date').value;
         const grandTotal = document.getElementById('prev-grand-total').innerText.replace(/[^0-9,-]+/g,"");
         
-        // DP & Sisa
         const dpStr = document.getElementById('inp-dp').value;
         const dpVal = dpStr === '' ? 0 : parseFloat(dpStr);
         const grandInt = parseInt(grandTotal) || 0;
@@ -947,19 +1083,18 @@
             docsData.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             tbody.innerHTML = '';
-            let uangMasuk = 0;  // Total DP yang dibayarkan + Lunas
-            let grossIncome = 0; // Total Tagihan Invoice Kotor
-            let totalPiutang = 0; // Total Sisa
+            let uangMasuk = 0; 
+            let grossIncome = 0; 
+            let totalPiutang = 0; 
             let paidInvCount = 0; 
 
             docsData.forEach(data => {
                 if(data.type === 'Invoice') {
                     grossIncome += data.grandTotal; 
-                    uangMasuk += (data.dp || 0); // Menjumlahkan uang yang sudah masuk (DP/Lunas)
+                    uangMasuk += (data.dp || 0); 
                     
                     if(data.isPaid) { 
                         paidInvCount++; 
-                        // Pastikan jika Lunas, uang masuk adalah totalnya (jika misal DP tidak diisi manual)
                         if(!data.dp || data.dp < data.grandTotal) {
                             uangMasuk += (data.grandTotal - (data.dp || 0));
                         }
@@ -970,7 +1105,6 @@
 
                 const badgeTipe = data.type === 'Invoice' ? '<span class="badge badge-inv">Invoice</span>' : '<span class="badge badge-est">Estimate</span>';
                 
-                // Status Logic
                 let badgeStatus = '-';
                 if(data.type === 'Invoice') {
                     if(data.isPaid) badgeStatus = '<span class="badge badge-paid">LUNAS</span>';
@@ -1063,42 +1197,6 @@
     }
     window.addEventListener('resize', fitPaperToScreen);
 
-</script>
-
-<button id="pwa-install-btn" style="display:none; position:fixed; bottom:20px; right:20px; background:#0ea5e9; color:white; border:none; padding:12px 20px; border-radius:30px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:9999; cursor:pointer;">
-    ⬇️ Install Aplikasi Ini
-</button>
-
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('ServiceWorker registered!', reg.scope))
-                .catch(err => console.log('ServiceWorker gagal:', err));
-        });
-    }
-
-    let deferredPrompt;
-    const installBtn = document.getElementById('pwa-install-btn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBtn.style.display = 'block';
-
-        installBtn.addEventListener('click', () => {
-            installBtn.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') { console.log('User menginstall PWA'); }
-                deferredPrompt = null;
-            });
-        });
-    });
-
-    window.addEventListener('appinstalled', () => {
-        installBtn.style.display = 'none';
-    });
 </script>
 </body>
 </html>
