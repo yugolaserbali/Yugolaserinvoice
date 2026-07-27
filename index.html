@@ -29,20 +29,22 @@
         
         body { background-color: var(--bg-app); margin: 0; display: flex; flex-direction: column; height: 100vh; color: var(--text-main); overflow: hidden; }
 
-        <!-- LOGIN SCREEN -->
-<div id="login-screen">
-    <div class="login-box">
-        <h2 style="font-weight: 900;">YUGO <span style="color:white">LASER</span> PRO</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aplikasi Internal Studio</p>
-        
-        <input type="email" id="log-email" placeholder="Email Anda" autocomplete="off">
-        <input type="password" id="log-pwd" placeholder="Password Anda">
-        
-        <button class="btn" onclick="loginUser()">🔓 Masuk Aplikasi</button>
-        
-        <!-- Tombol Daftar Akun Baru Sudah Dihapus Permanen dari Sini -->
-    </div>
-</div>
+        /* LOGIN SCREEN */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1e293b, #0b1121);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: var(--bg-panel); border: 1px solid var(--border); padding: 40px 30px;
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px;
+            text-align: center; backdrop-filter: blur(10px);
+        }
+        .login-box h2 { color: var(--primary); margin-top: 0; margin-bottom: 5px; letter-spacing: 1px;}
+        .login-box input { margin-bottom: 15px; }
+
+        /* MAIN APP WRAPPER */
+        #main-app { display: none; flex-direction: column; height: 100%; width: 100%; }
 
         /* NAVBAR / TABS */
         .top-nav { background: #0f172a; border-bottom: 1px solid var(--border); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 50; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
@@ -201,7 +203,7 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { size: A4 portrait; margin: 0; }
             body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-            .top-nav, .editor-panel, .dashboard-container, #pwa-install-btn { display: none !important; }
+            .top-nav, .editor-panel, .dashboard-container, #pwa-install-btn, #login-screen { display: none !important; }
             .app-body, .view-section, .preview-panel { display: block !important; height: auto !important; overflow: visible !important; width: 100% !important; padding: 0 !important; background: transparent !important; }
             #preview-scaler { transform: none !important; width: 100% !important; margin: 0 !important; }
             #invoice-paper { width: 100% !important; max-width: 100% !important; height: auto !important; padding: 15mm 20mm !important; box-shadow: none !important; margin: 0 !important; border-radius: 0 !important;}
@@ -217,21 +219,16 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN SCREEN - BERSIH DARI TOMBOL DAFTAR -->
 <div id="login-screen">
     <div class="login-box">
         <h2 style="font-weight: 900;">YUGO <span style="color:white">LASER</span> PRO</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Silakan Login untuk mengakses sistem</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Aplikasi Internal Studio</p>
         
-        <input type="email" id="log-email" placeholder="Email Anda" autocomplete="off">
-        <input type="password" id="log-pwd" placeholder="Password Anda">
+        <input type="email" id="log-email" placeholder="Email Admin" autocomplete="off">
+        <input type="password" id="log-pwd" placeholder="Password">
         
         <button class="btn" onclick="loginUser()">🔓 Masuk Aplikasi</button>
-        
-        <div style="margin-top: 20px; font-size: 0.8rem; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px;">
-            Belum punya akun? <br>
-            <button class="btn-small btn-outline" style="margin-top: 10px; width:100%;" onclick="registerUser()">Daftar Akun Baru</button>
-        </div>
     </div>
 </div>
 
@@ -342,9 +339,10 @@
                             </div>
                             <div class="meta-data">
                                 <table class="meta-table">
-                                    <tr><td>NO. REF</td><td id="prev-est-no" style="font-weight: 700; color: #000;">---</td></tr>
-                                    <tr><td>TANGGAL</td><td id="prev-date">---</td></tr>
-                                </table>
+    <tr><td>NO. REF</td><td id="prev-est-no" style="font-weight: 700; color: #000;">---</td></tr>
+    <tr><td>TANGGAL</td><td id="prev-date" style="font-weight: 700; color: #000;">---</td></tr>
+</table>
+
                             </div>
                         </div>
 
@@ -503,11 +501,9 @@
     // ==========================================
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            // User sudah login
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             
-            // Inisialisasi App
             changeDocType();
             document.getElementById('inp-date').valueAsDate = new Date();
             document.getElementById('filter-month').value = new Date().toISOString().substring(0, 7);
@@ -516,7 +512,6 @@
             setupClientAutocomplete();
             if(db) fetchClients(); 
         } else {
-            // User belum login
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
         }
@@ -529,17 +524,6 @@
 
         firebase.auth().signInWithEmailAndPassword(email, pwd)
             .catch(error => { alert("Gagal Login: " + error.message); });
-    }
-
-    function registerUser() {
-        const email = document.getElementById('log-email').value;
-        const pwd = document.getElementById('log-pwd').value;
-        if(!email || !pwd) return alert('Isi Email dan Password yang ingin didaftarkan.');
-        if(pwd.length < 6) return alert('Password minimal 6 karakter.');
-
-        firebase.auth().createUserWithEmailAndPassword(email, pwd)
-            .then(() => { alert("Pendaftaran Berhasil! Anda sudah masuk."); })
-            .catch(error => { alert("Gagal Daftar: " + error.message); });
     }
 
     function logoutUser() {
