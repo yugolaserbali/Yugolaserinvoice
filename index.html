@@ -82,6 +82,8 @@
         .btn-danger:hover { background: #ef4444; color:white; }
         .btn-icon { border: 1px solid var(--border); background: #1e293b; color: white; border-radius: 6px; padding: 8px 12px; cursor: pointer;}
         .btn-small { padding: 6px 12px; font-size: 0.8rem; border-radius: 5px; cursor: pointer; border: none; color: white;}
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: rgba(14, 165, 233, 0.1); }
 
         /* PREVIEW PANEL */
         .preview-panel { flex: 1; background: radial-gradient(circle at center, #1e293b, #0b1121); padding: 30px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
@@ -157,9 +159,11 @@
 
         /* CUSTOMER MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; width: 90%; max-width: 700px; max-height: 80vh; overflow-y: auto; color: white;}
+        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; width: 95%; max-width: 800px; max-height: 85vh; overflow-y: auto; color: white;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;}
         .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        #import-section { background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--primary); }
 
         /* RESPONSIVE & PRINT */
         @media screen and (max-width: 900px) {
@@ -229,7 +233,7 @@
 
             <h3 style="display: flex; justify-content: space-between; align-items: center;">
                 Data Klien 
-                <button class="btn-small btn-secondary" onclick="openClientModal()" style="font-size: 0.7rem;">👥 Lihat Data</button>
+                <button class="btn-small btn-secondary" onclick="openClientModal()" style="font-size: 0.7rem;">👥 Lihat & Kelola Data</button>
             </h3>
             <div class="form-group">
                 <input type="text" id="inp-client-name" placeholder="Ketik nama klien..." autocomplete="off" oninput="updatePreview()">
@@ -349,7 +353,6 @@
         <div class="dashboard-container">
             <h2 style="color: white; margin-top:0;">Laporan & Analitik Studio</h2>
             
-            <!-- STAT GRID BARU: ADA 4 KOTAK -->
             <div class="stat-grid">
                 <div class="stat-card" style="border-top-color: var(--accent);">
                     <h4>Total Tagihan Kotor</h4>
@@ -404,14 +407,27 @@
 <div id="client-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 style="margin:0; color:var(--primary);">Manajemen Data Klien</h2>
-            <button class="close-btn" onclick="closeClientModal()">×</button>
+            <h2 style="margin:0; color:var(--primary);">Database Klien</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-small btn-outline" onclick="toggleImportSection()">📥 Import Excel</button>
+                <button class="close-btn" onclick="closeClientModal()">×</button>
+            </div>
         </div>
+
+        <!-- AREA IMPORT EXCEL (TERSEMBUNYI DEFAULT) -->
+        <div id="import-section" style="display: none;">
+            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8;">
+                <strong>Cara Import:</strong> Buka file Excel Anda. Block (sorot) kolom <strong>Nama</strong> dan <strong>No WA</strong> sekaligus, lalu Copy (Salin) dan Paste (Tempel) ke dalam kotak di bawah ini.
+            </p>
+            <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;" placeholder="Contoh Paste:\nBudi Santoso\t08123456789\nAgus\t08987654321"></textarea>
+            <button class="btn-small btn-success" onclick="processBulkImport()">Mulai Import ke Cloud</button>
+        </div>
+
         <div class="table-responsive">
             <table class="data-table" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th>Nama</th>
+                        <th>Nama & Alamat</th>
                         <th>No. HP</th>
                         <th>Aksi</th>
                     </tr>
@@ -495,7 +511,7 @@
     }
 
     // ==========================================
-    // MANAJEMEN PELANGGAN MODAL
+    // MANAJEMEN PELANGGAN MODAL & IMPORT EXCEL
     // ==========================================
     function openClientModal() {
         const modal = document.getElementById('client-modal');
@@ -506,11 +522,22 @@
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada data pelanggan tersimpan.</td></tr>';
         } else {
             clientsData.forEach(c => {
+                const safeName = c.name.replace(/'/g, "\\'");
+                const safePhone = c.phone ? c.phone.replace(/'/g, "\\'") : '';
+                const safeAddress = c.address ? c.address.replace(/'/g, "\\'") : '';
+                const safeId = c.id;
+
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${c.name}</strong><br><small>${c.address || ''}</small></td>
+                        <td><strong style="color: var(--primary);">${c.name}</strong><br><small style="color: #94a3b8;">${c.address || 'Alamat blm diisi'}</small></td>
                         <td>${c.phone || '-'}</td>
-                        <td><button class="btn-small btn-success" onclick="selectClientFromModal('${c.name}', '${c.phone}', '${c.address}')">Pilih</button></td>
+                        <td>
+                            <div style="display:flex; gap: 5px; flex-wrap:wrap;">
+                                <button class="btn-small btn-success" onclick="selectClientFromModal('${safeName}', '${safePhone}', '${safeAddress}')">Pilih</button>
+                                <button class="btn-small btn-secondary" onclick="editClientData('${safeId}', '${safeName}', '${safePhone}', '${safeAddress}')">Edit</button>
+                                <button class="btn-small btn-danger" onclick="deleteClientData('${safeId}')">Hapus</button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -528,13 +555,99 @@
         closeClientModal();
     }
 
+    // FITUR EDIT KLIEN
+    async function editClientData(id, oldName, oldPhone, oldAddress) {
+        const newName = prompt("Edit Nama Pelanggan:", oldName);
+        if(newName === null || newName.trim() === '') return;
+        
+        const newPhone = prompt("Edit No HP/WA:", oldPhone);
+        if(newPhone === null) return;
+
+        const newAddress = prompt("Edit Alamat:", oldAddress);
+        if(newAddress === null) return;
+
+        const newId = newName.replace(/\s+/g, '').toLowerCase();
+
+        try {
+            if(newId !== id) {
+                // Jika nama berubah, primary key berubah. Buat baru & hapus yg lama
+                await db.collection("clients").doc(newId).set({ name: newName, phone: newPhone, address: newAddress }, { merge: true });
+                await db.collection("clients").doc(id).delete();
+            } else {
+                // Jika nama sama, cukup update
+                await db.collection("clients").doc(id).update({ phone: newPhone, address: newAddress });
+            }
+            await fetchClients();
+            openClientModal();
+        } catch(e) {
+            console.error(e);
+            alert("Gagal mengupdate data pelanggan.");
+        }
+    }
+
+    // FITUR HAPUS KLIEN
+    async function deleteClientData(id) {
+        if(confirm("Apakah Anda yakin ingin menghapus pelanggan ini dari database?")) {
+            try {
+                await db.collection("clients").doc(id).delete();
+                await fetchClients();
+                openClientModal();
+            } catch(e) {
+                console.error(e);
+                alert("Gagal menghapus data pelanggan.");
+            }
+        }
+    }
+
+    // FITUR IMPORT MASSAL DARI EXCEL
+    function toggleImportSection() {
+        const section = document.getElementById('import-section');
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function processBulkImport() {
+        const textData = document.getElementById('import-data').value;
+        if(!textData.trim()) return alert("Kolom teks masih kosong! Silakan Paste data dari Excel terlebih dahulu.");
+        
+        const lines = textData.split('\n');
+        let count = 0;
+        const batch = db.batch(); // Menggunakan batch untuk performa cepat (max 500 sekaligus)
+
+        for(let line of lines) {
+            const cols = line.split('\t'); // Excel memisahkan kolom dengan Tab (\t)
+            if(cols.length >= 1) {
+                const name = cols[0].trim();
+                const phone = cols[1] ? cols[1].trim() : '';
+                
+                if(name) {
+                    const id = name.replace(/\s+/g, '').toLowerCase();
+                    const ref = db.collection("clients").doc(id);
+                    batch.set(ref, { name: name, phone: phone, address: '' }, { merge: true });
+                    count++;
+                }
+            }
+        }
+
+        try {
+            document.getElementById('import-section').innerHTML = '<p>Sedang menyimpan ke Cloud... Harap tunggu...</p>';
+            await batch.commit();
+            alert(`${count} Data Pelanggan berhasil disimpan ke Cloud!`);
+            document.getElementById('import-data').value = ''; 
+            toggleImportSection();
+            await fetchClients();
+            openClientModal();
+        } catch(e) {
+            console.error(e);
+            alert("Terjadi kesalahan saat meng-import data.");
+        }
+    }
+
     // ==========================================
     // 3. EDITOR & PREVIEW LOGIC
     // ==========================================
     function changeDocType() {
         const type = document.getElementById('inp-doc-type').value;
         
-        // Merubah Title dan Subtitle sesuai dengan PDF PDF
         if (type === 'Invoice') {
             document.getElementById('prev-doc-title').innerText = "INVOICE";
             document.getElementById('prev-doc-subtitle').innerText = "Official Receipt";
@@ -586,7 +699,6 @@
         document.getElementById('prev-est-no').innerText = document.getElementById('inp-est-no').value;
         const d = new Date(document.getElementById('inp-date').value);
         if(!isNaN(d)) {
-            // Format tanggal spt 9 Feb 2026
             const tglOptions = { day: 'numeric', month: 'short', year: 'numeric' };
             document.getElementById('prev-date').innerText = d.toLocaleDateString('id-ID', tglOptions);
         }
@@ -637,7 +749,7 @@
     }
 
     // ==========================================
-    // 4. FIREBASE CRUD LOGIC
+    // 4. FIREBASE AUTOCOMPLETE LOGIC
     // ==========================================
     function setupClientAutocomplete() {
         const input = document.getElementById("inp-client-name");
@@ -671,7 +783,8 @@
         if(!db) return;
         try {
             const snapshot = await db.collection("clients").get();
-            clientsData = snapshot.docs.map(doc => doc.data());
+            // Simpan doc.id sebagai referensi untuk Hapus/Edit
+            clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } catch(e) { console.error("Gagal load klien", e); }
     }
 
@@ -726,7 +839,6 @@
         }
     }
     
-    // FUNGSI HAPUS DOKUMEN DARI FIREBASE
     async function deleteDocument(docNo) {
         if(!db) return alert("Firebase belum terhubung.");
         
@@ -735,7 +847,7 @@
             try {
                 await db.collection("documents").doc(docNo).delete();
                 alert(`Dokumen ${docNo} berhasil dihapus.`);
-                fetchDocuments(); // Refresh tabel setelah dihapus
+                fetchDocuments(); 
             } catch (error) {
                 console.error("Error deleting document: ", error);
                 alert("Terjadi kesalahan saat menghapus dokumen.");
@@ -759,17 +871,17 @@
             docsData.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             tbody.innerHTML = '';
-            let monthIncome = 0; // Hanya invoice yang LUNAS
-            let grossIncome = 0; // Semua total Tagihan dari INVOICE (Lunas & Belum Lunas)
+            let monthIncome = 0; 
+            let grossIncome = 0; 
             let paidInvCount = 0; 
             let estCount = 0;
 
             docsData.forEach(data => {
                 if(data.type === 'Invoice') {
-                    grossIncome += data.grandTotal; // Tambah ke Total Kotor
+                    grossIncome += data.grandTotal; 
                     if(data.isPaid) { 
                         paidInvCount++; 
-                        monthIncome += data.grandTotal; // Tambah ke Pendapatan Lunas
+                        monthIncome += data.grandTotal; 
                     }
                 } else if(data.type === 'Estimate') { 
                     estCount++; 
@@ -781,7 +893,6 @@
                     `<button class="btn-small btn-success" onclick='convertToInvoice(${JSON.stringify(data)})'>Buat Invoice</button>` : 
                     `<button class="btn-small btn-secondary" onclick='loadToEditor(${JSON.stringify(data)})'>Lihat</button>`;
 
-                // TOMBOL HAPUS BARU
                 const deleteBtn = `<button class="btn-small btn-danger" onclick="deleteDocument('${data.docNo}')">Hapus</button>`;
 
                 tbody.innerHTML += `
@@ -798,7 +909,7 @@
             });
 
             document.getElementById('dash-income').innerText = formatRp(monthIncome);
-            document.getElementById('dash-gross').innerText = formatRp(grossIncome); // Tampilkan Total Kotor
+            document.getElementById('dash-gross').innerText = formatRp(grossIncome); 
             document.getElementById('dash-paid-count').innerText = paidInvCount;
             document.getElementById('dash-est-count').innerText = estCount;
 
@@ -860,13 +971,13 @@
     window.addEventListener('resize', fitPaperToScreen);
 
 </script>
+
 <!-- KODE PWA: SERVICE WORKER & INSTALL PROMPT -->
 <button id="pwa-install-btn" style="display:none; position:fixed; bottom:20px; right:20px; background:#0ea5e9; color:white; border:none; padding:12px 20px; border-radius:30px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:9999; cursor:pointer;">
     ⬇️ Install Aplikasi Ini
 </button>
 
 <script>
-    // 1. Registrasi Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
@@ -875,35 +986,26 @@
         });
     }
 
-    // 2. Tangani Tombol Install
     let deferredPrompt;
     const installBtn = document.getElementById('pwa-install-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Mencegah Chrome memunculkan prompt mini otomatis (bisa mengganggu UI)
         e.preventDefault();
         deferredPrompt = e;
-        
-        // Memunculkan tombol install melayang buatan kita
         installBtn.style.display = 'block';
 
         installBtn.addEventListener('click', () => {
             installBtn.style.display = 'none';
-            // Munculkan prompt native dari browser
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User menginstall PWA');
-                }
+                if (choiceResult.outcome === 'accepted') { console.log('User menginstall PWA'); }
                 deferredPrompt = null;
             });
         });
     });
 
-    // Sembunyikan tombol jika sudah berhasil di-install
     window.addEventListener('appinstalled', () => {
         installBtn.style.display = 'none';
-        console.log('PWA berhasil di-install');
     });
 </script>
 </body>
