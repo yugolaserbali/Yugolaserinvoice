@@ -409,7 +409,7 @@
         <div class="modal-header">
             <h2 style="margin:0; color:var(--primary);">Database Klien</h2>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-small btn-outline" onclick="toggleImportSection()">📥 Import Excel</button>
+                <button class="btn-small btn-outline" onclick="toggleImportSection()">📥 Import Text</button>
                 <button class="close-btn" onclick="closeClientModal()">×</button>
             </div>
         </div>
@@ -417,10 +417,10 @@
         <!-- AREA IMPORT EXCEL (TERSEMBUNYI DEFAULT) -->
         <div id="import-section" style="display: none;">
             <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8;">
-                <strong>Cara Import:</strong> Buka file Excel Anda. Block (sorot) kolom <strong>Nama</strong> dan <strong>No WA</strong> sekaligus, lalu Copy (Salin) dan Paste (Tempel) ke dalam kotak di bawah ini.
+                <strong>Cara Import:</strong> Paste teks daftar pelanggan Anda di bawah. Sistem akan otomatis memisahkan Nama dan Nomor Telepon.
             </p>
-            <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;" placeholder="Contoh Paste:\nBudi Santoso\t08123456789\nAgus\t08987654321"></textarea>
-            <button class="btn-small btn-success" onclick="processBulkImport()">Mulai Import ke Cloud</button>
+            <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;" placeholder="Contoh Paste:\nGiovanni 081262356835\nSantika Putri +62 859-6042-3472"></textarea>
+            <button class="btn-small btn-success" onclick="processSmartImport()">Mulai Import ke Cloud</button>
         </div>
 
         <div class="table-responsive">
@@ -511,7 +511,7 @@
     }
 
     // ==========================================
-    // MANAJEMEN PELANGGAN MODAL & IMPORT EXCEL
+    // MANAJEMEN PELANGGAN MODAL & SMART IMPORT
     // ==========================================
     function openClientModal() {
         const modal = document.getElementById('client-modal');
@@ -570,11 +570,9 @@
 
         try {
             if(newId !== id) {
-                // Jika nama berubah, primary key berubah. Buat baru & hapus yg lama
                 await db.collection("clients").doc(newId).set({ name: newName, phone: newPhone, address: newAddress }, { merge: true });
                 await db.collection("clients").doc(id).delete();
             } else {
-                // Jika nama sama, cukup update
                 await db.collection("clients").doc(id).update({ phone: newPhone, address: newAddress });
             }
             await fetchClients();
@@ -599,40 +597,64 @@
         }
     }
 
-    // FITUR IMPORT MASSAL DARI EXCEL
+    // SMART IMPORT DARI TEXT (Regex Based)
     function toggleImportSection() {
         const section = document.getElementById('import-section');
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
     }
 
-    async function processBulkImport() {
+    async function processSmartImport() {
         const textData = document.getElementById('import-data').value;
-        if(!textData.trim()) return alert("Kolom teks masih kosong! Silakan Paste data dari Excel terlebih dahulu.");
+        if(!textData.trim()) return alert("Kolom teks masih kosong!");
         
         const lines = textData.split('\n');
         let count = 0;
-        const batch = db.batch(); // Menggunakan batch untuk performa cepat (max 500 sekaligus)
+        const batch = db.batch();
 
         for(let line of lines) {
-            const cols = line.split('\t'); // Excel memisahkan kolom dengan Tab (\t)
-            if(cols.length >= 1) {
-                const name = cols[0].trim();
-                const phone = cols[1] ? cols[1].trim() : '';
-                
-                if(name) {
-                    const id = name.replace(/\s+/g, '').toLowerCase();
-                    const ref = db.collection("clients").doc(id);
-                    batch.set(ref, { name: name, phone: phone, address: '' }, { merge: true });
-                    count++;
-                }
+            line = line.trim();
+            if(!line) continue;
+
+            // Regex untuk memisahkan nama dan nomor hp.
+            // Mencari pola dimana angka pertama kali muncul, atau tanda +
+            const match = line.match(/^(.*?)([\+0-9][0-9\-\s\(\)]+)$/);
+            
+            let name = "";
+            let phone = "";
+
+            if(match) {
+                name = match[1].trim();
+                phone = match[2].trim();
+            } else {
+                // Jika tidak ada angka terdeteksi, anggap semuanya adalah nama
+                name = line;
+                phone = "";
+            }
+            
+            // Hapus non-breaking space jika ada di nama
+            name = name.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+
+            if(name) {
+                const id = name.replace(/[\s\.]+/g, '').toLowerCase();
+                const ref = db.collection("clients").doc(id);
+                batch.set(ref, { name: name, phone: phone, address: '' }, { merge: true });
+                count++;
             }
         }
 
         try {
-            document.getElementById('import-section').innerHTML = '<p>Sedang menyimpan ke Cloud... Harap tunggu...</p>';
+            document.getElementById('import-section').innerHTML = '<p style="color:var(--primary);">Sedang memproses penyimpanan massal... Harap tunggu...</p>';
             await batch.commit();
-            alert(`${count} Data Pelanggan berhasil disimpan ke Cloud!`);
-            document.getElementById('import-data').value = ''; 
+            alert(`${count} Data Pelanggan berhasil diproses ke Cloud!`);
+            
+            // Kembalikan textarea
+            document.getElementById('import-section').innerHTML = `
+                <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8;">
+                    <strong>Cara Import:</strong> Paste teks daftar pelanggan Anda di bawah. Sistem akan otomatis memisahkan Nama dan Nomor Telepon.
+                </p>
+                <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;" placeholder="Contoh Paste:\\nGiovanni 081262356835\\nSantika Putri +62 859-6042-3472"></textarea>
+                <button class="btn-small btn-success" onclick="processSmartImport()">Mulai Import ke Cloud</button>
+            `;
             toggleImportSection();
             await fetchClients();
             openClientModal();
