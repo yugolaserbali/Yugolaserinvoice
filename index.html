@@ -305,6 +305,9 @@
                 </div>
 
                 <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top:20px; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- TOMBOL RESET DITAMBAHKAN DI SINI -->
+                    <button class="btn" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid #ef4444;" onclick="resetForm()">🔄 Buat Baru / Reset Form</button>
+
                     <button class="btn btn-success" onclick="saveDocumentToDB()">💾 Simpan ke Database</button>
                     <div style="display: flex; gap: 10px;">
                        <button class="btn" style="flex:1;" onclick="window.print()">🖨️ Cetak PDF</button>
@@ -759,6 +762,34 @@
         const prefix = type === 'Invoice' ? 'INV-' : 'QT-';
         const rnd = Math.random().toString(36).substring(2, 7).toUpperCase();
         document.getElementById('inp-est-no').value = prefix + rnd;
+        updatePreview();
+    }
+
+    // --- FUNGSI RESET / BUAT BARU ---
+    function resetForm() {
+        if(!confirm("Apakah Anda yakin ingin mereset form dan membuat dokumen baru? Data yang belum disimpan akan hilang.")) {
+            return;
+        }
+
+        // 1. Kosongkan data Klien
+        document.getElementById('inp-client-name').value = '';
+        document.getElementById('inp-client-phone').value = '';
+        document.getElementById('inp-client-addr').value = '';
+
+        // 2. Reset Item Pekerjaan kembali menjadi 1 baris kosong
+        items = [{ name: '', details: '', qty: '', price: '' }];
+        renderItems();
+
+        // 3. Kosongkan Diskon, Pajak, dan DP
+        document.getElementById('inp-discount').value = '';
+        document.getElementById('inp-tax').value = '';
+        document.getElementById('inp-dp').value = '';
+
+        // 4. Set tanggal kembali ke hari ini
+        document.getElementById('inp-date').valueAsDate = new Date();
+
+        // 5. Generate Nomor Dokumen Baru & Update Preview
+        generateRandomDocNo();
         updatePreview();
     }
 
