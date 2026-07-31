@@ -11,7 +11,6 @@
     
     <style>
         :root {
-            /* Futuristic Neon Palette */
             --bg-app: #0b1121;
             --bg-panel: rgba(15, 23, 42, 0.85);
             --primary: #0ea5e9; 
@@ -78,8 +77,7 @@
         }
         input::placeholder, textarea::placeholder { color: #64748b; }
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 8px rgba(14, 165, 233, 0.3); }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-        input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
         /* AUTOCOMPLETE & MODAL */
         .autocomplete-items { position: absolute; border: 1px solid var(--border); z-index: 99; top: 100%; left: 0; right: 0; max-height: 150px; overflow-y: auto; background: #1e293b; border-radius: 0 0 8px 8px; }
@@ -111,66 +109,75 @@
         .preview-panel { flex: 1; background: radial-gradient(circle at center, #1e293b, #0b1121); padding: 30px; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
         #preview-scaler { transform-origin: top center; transition: transform 0.3s ease; }
 
-        /* INVOICE PAPER */
+        /* INVOICE PAPER - UKURAN LETTER */
         #invoice-paper {
-            background: var(--paper-bg); width: 210mm; min-height: 297mm; padding: 15mm 20mm; position: relative; color: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; border-radius: 4px;
+            background: var(--paper-bg); width: 215.9mm; height: 279.4mm; padding: 15mm 20mm; position: relative; color: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; border-radius: 4px;
         }
         
-        .paper-top-accent { position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, var(--primary), var(--accent)); z-index: 3;}
+        .paper-top-accent { position: absolute; top: 0; left: 0; right: 0; height: 15px; background: linear-gradient(75deg, #4567, #555); z-index: 3;}
 
-        /* WATERMARK */
+        /* HEADER ELEGAN MAROON */
+        .invoice-header-bg {
+            background: #800020 !important;
+            background-image: linear-gradient(135deg, #590d1f 0%, #800020 100%) !important;
+            color: white !important;
+            padding: 7mm 3mm 5mm 3mm;
+            position: relative;
+            margin: -15mm -20mm 3mm -20mm;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* FOOTER DEKORATIF TIPIS MAROON */
+        .invoice-footer-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10mm;
+            background: #800020 !important;
+            background-image: linear-gradient(135deg, #800020 0%, #590d1f 100%) !important;
+            z-index: 1;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* WATERMARK & STAMP */
         .watermark-bg {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 75%; max-width: 500px; opacity: 0.04; z-index: 1; pointer-events: none; filter: grayscale(100%);
+            width: 100%; max-width: 2500px; opacity: 0.020; z-index: 1; pointer-events: none; filter: grayscale(100%);
         }
 
         .lunas-stamp {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg);
-            font-size: 80pt; color: rgba(16, 185, 129, 0.15); font-weight: 900; border: 15px solid rgba(16, 185, 129, 0.15);
+            position: absolute; top: 80%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 100pt; color: rgba(16, 185, 129, 0.15); font-weight: 900; border: 15px solid rgba(16, 185, 129, 0.15);
             padding: 10px 40px; border-radius: 20px; text-transform: uppercase; z-index: 2; pointer-events: none; display: none;
         }
 
-        /* INVOICE HEADER */
-        .header { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 2px solid #000; padding-bottom: 20px; position: relative; z-index: 3; align-items: center;}
-        
-        .company-profile { display: flex; align-items: center; gap: 15px; }
-        #company-logo { width: 75px; height: 75px; object-fit: contain; }
-        
-        .company-details h1 { margin: 0; font-size: 15pt; font-weight: 900; color: #000; letter-spacing: 0.5px;}
-        .company-details p { margin: 2px 0; font-size: 9pt; color: #333; }
-
-        .invoice-title { text-align: right; }
-        .invoice-title h1 { margin: 0; font-size: 26pt; font-weight: 900; letter-spacing: 3px; color: #000; }
-        .invoice-title p { margin: 0; font-size: 9.5pt; font-weight: bold; color: #666; letter-spacing: 2px; text-transform: uppercase; }
-        
-        .info-section { display: flex; justify-content: space-between; margin: 25px 0; position: relative; z-index: 3;}
-        .bill-to p { font-weight: 700; font-size: 10pt; margin: 0; color: #000; }
-        .meta-table td { padding: 4px 0 4px 15px; text-align: right; font-size: 9.5pt; }
+        .info-section { display: flex; justify-content: space-between; margin: px 0; position: relative; z-index: 3;}
+        .bill-to p, .bill-to div { font-weight: 900; font-size: 14pt; margin: 0; color: #6b1111; }
+        .meta-table td { padding: 4px 0 4px 9px; text-align: right; font-size: 13pt; }
         .meta-table td:first-child { font-weight: 700; color: #555; }
 
         /* INVOICE TABLE */
-        .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; position: relative; z-index: 3; }
-        .inv-table th { background: #000; color: #fff; padding: 10px; text-align: left; font-size: 9pt; letter-spacing: 1px; }
-        .inv-table td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 9.5pt; vertical-align: top; color: #000; }
+        .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; position: relative; z-index: 3; }
+        .inv-table th { background: #800020; color: #fff; padding: 10px; text-align: left; font-size: 15pt; letter-spacing: 1px; }
+        .inv-table td { padding: 3px 3px; border-bottom: 1px solid #000; font-size: 13pt; vertical-align: top; color: #000; }
 
         .calc-section { display: flex; flex-direction: column; align-items: flex-end; margin-top: 15px; position: relative; z-index: 3; }
-        .calc-row { display: flex; justify-content: space-between; width: 270px; padding: 6px 10px; font-size: 9.5pt; color: #000; }
-        .calc-row.total { background: #000; color: #fff; padding: 10px; font-weight: 800; font-size: 11pt; margin-top: 5px; }
+        .calc-row { display: flex; justify-content: space-between; width: 270px; padding: 6px 10px; font-size: 13pt; color: #000; }
+        .calc-row.total { background: #800020; color: #fff; padding: 10px; font-weight: 800; font-size: 13pt; margin-top: 5px; }
         .calc-row.dp { color: #059669; font-weight: bold; }
-        .calc-row.sisa { color: #dc2626; font-weight: bold; font-size: 10.5pt; border-top: 2px solid #000; padding-top: 10px; margin-top: 5px;}
+        .calc-row.sisa { color: #dc2626; font-weight: bold; font-size: 13pt; border-top: 2px solid #800020; padding-top: 10px; margin-top: 5px;}
 
         .footer { margin-top: 40px; padding-top: 20px; display: flex; gap: 20px; position: relative; z-index: 3; font-size: 8.5pt; color: #000; }
 
         /* DASHBOARD SECTION */
-        .dashboard-container { 
-            width: 100%; height: 100%; padding: 30px; 
-            overflow-y: auto; background: var(--bg-app); 
-            padding-bottom: 120px; 
-        }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .dashboard-container { width: 100%; height: 100%; padding: 30px; overflow-y: auto; background: var(--bg-app); padding-bottom: 120px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-card { background: var(--bg-panel); padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-top: 4px solid var(--primary); }
         .stat-card h4 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.85rem; }
-        .stat-card h2 { margin: 0; font-size: 1.5rem; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .stat-card h2 { margin: 0; font-size: 1.5rem; color: white; }
 
         .table-responsive { width: 100%; overflow-x: auto; padding-bottom: 15px; }
         .data-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); min-width: 800px;}
@@ -181,6 +188,11 @@
         .badge-est { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
         .badge-paid { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
         .badge-dp { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .badge-unpaid { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+        /* FILTER BAR */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
+        .filter-bar input, .filter-bar select { flex: 1; min-width: 180px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: #1e293b; color: white; outline: none; }
 
         /* MODALS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
@@ -192,44 +204,39 @@
 
         /* RESPONSIVE & PRINT */
         @media screen and (max-width: 900px) {
-            .app-body { overflow: auto; display: block; }
-            .view-section { flex-direction: column; height: auto; }
+            .app-body { overflow-y: auto; overflow-x: hidden; display: block; }
+            .view-section.active { display: block !important; height: auto !important; }
             .editor-panel { width: 100%; height: auto; border-right: none; }
             .preview-panel { width: 100%; padding: 20px 0; min-height: 500px; }
             .top-nav { flex-wrap: wrap; gap: 10px; }
-            .dashboard-container { padding: 15px; padding-bottom: 150px; }
         }
 
-        /* PRINT CSS */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            @page { size: A4 portrait; margin: 0; }
+            @page { size: letter portrait; margin: 0; }    
             body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-            .top-nav, .editor-panel, .dashboard-container, #pwa-install-btn, #login-screen { display: none !important; }
+            .top-nav, .editor-panel, .dashboard-container, #login-screen { display: none !important; }
             .app-body, .view-section, .preview-panel { display: block !important; height: auto !important; overflow: visible !important; width: 100% !important; padding: 0 !important; background: transparent !important; }
             #preview-scaler { transform: none !important; width: 100% !important; margin: 0 !important; }
-            #invoice-paper { width: 100% !important; max-width: 100% !important; height: auto !important; padding: 15mm 20mm !important; box-shadow: none !important; margin: 0 !important; border-radius: 0 !important;}
-            .company-details h1 { font-size: 16pt !important; }
-            .inv-table th { background: #000 !important; color: white !important; }
-            .calc-row.total { background: #000 !important; color: white !important; }
+            
+            #invoice-paper { 
+                width: 215.9mm !important; height: 279.4mm !important; max-width: 100% !important; 
+                box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; overflow: hidden !important; 
+            }
         }
     </style>
-    <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0ea5e9"/>
-    <link rel="apple-touch-icon" href="icon.png">
 </head>
 <body>
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
     <div class="login-box">
-        <h2 style="font-weight: 900;">YUGO <span style="color:white">LASER</span> PRO</h2>
+        <h2 style="font-weight: 900;">YUGO <span style="color:white">LASER</span> BALI</h2>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Aplikasi Internal Studio</p>
-        
         <input type="email" id="log-email" placeholder="Email Admin" autocomplete="off">
         <input type="password" id="log-pwd" placeholder="Password">
-        
         <button class="btn" onclick="loginUser()">🔓 Masuk Aplikasi</button>
     </div>
 </div>
@@ -239,7 +246,7 @@
     <div class="top-nav">
         <div style="font-weight: 900; font-size: 1.4rem; display: flex; align-items: center; gap:10px; color: white;">
             YUGO <span style="color: var(--primary);">LASER PRO</span> 
-            <span style="background:var(--accent);color:#fff;padding:4px 10px;border-radius:6px;font-size:0.75rem; letter-spacing:1px;">ULTIMATE</span>
+            <span style="background:var(--accent);color:#fff;padding:4px 10px;border-radius:6px;font-size:0.75rem;">INVOICE</span>
         </div>
         <div class="nav-tabs">
             <button id="tab-editor" class="active" onclick="switchTab('editor')">Buat Dokumen</button>
@@ -252,11 +259,10 @@
         <!-- EDITOR SECTION -->
         <div id="view-editor" class="view-section active">
             <div class="editor-panel">
-                
                 <div class="form-group" style="background:linear-gradient(135deg, rgba(14, 165, 233, 0.1), transparent); padding:15px; border-radius:10px; border: 1px solid var(--primary);">
                     <label style="color: var(--primary);">Jenis Dokumen</label>
                     <select id="inp-doc-type" onchange="changeDocType()" style="font-weight:bold; border-color: var(--primary);">
-                        <option value="Estimate">Estimate / Penawaran</option>
+                        <option value="Estimate">Estimate / Penawaran (Quotation)</option>
                         <option value="Invoice">Invoice / Tagihan</option>
                     </select>
                 </div>
@@ -280,7 +286,7 @@
                     <input type="text" id="inp-client-name" placeholder="Ketik 3 huruf nama klien..." autocomplete="off" oninput="updatePreview()">
                     <div id="autocomplete-list" class="autocomplete-items"></div>
                 </div>
-                <div class="form-group"><input type="tel" id="inp-client-phone" placeholder="No. HP / WA (Cth: 0812...)" oninput="updatePreview()"></div>
+                <div class="form-group"><input type="tel" id="inp-client-phone" placeholder="No. HP / WA" oninput="updatePreview()"></div>
                 <div class="form-group"><input type="text" id="inp-client-addr" placeholder="Alamat / Lokasi" oninput="updatePreview()"></div>
 
                 <h3 style="display: flex; justify-content: space-between; align-items: center;">
@@ -291,31 +297,29 @@
                 <div id="items-container"></div>
                 <button class="btn btn-secondary" onclick="addItemRow()">➕ Tambah Item</button>
 
-                <h3>Diskon & Pajak</h3>
+                <h3>Diskon & Express Service</h3>
                 <div style="display: flex; gap: 10px;">
                     <div style="flex:1"><label>Diskon (Rp)</label><input type="number" id="inp-discount" placeholder="0" value="" oninput="updatePreview()"></div>
-                    <div style="flex:1"><label>Pajak/Fee (%)</label><input type="number" id="inp-tax" placeholder="0" value="" oninput="updatePreview()"></div>
+                    <div style="flex:1"><label>Express Service/Fee (%)</label><input type="number" id="inp-tax" placeholder="0" value="" oninput="updatePreview()"></div>
                 </div>
                 
                 <h3 id="dp-title-section" style="color: var(--success); border-bottom-color: var(--success);">Pembayaran</h3>
                 <div class="form-group" id="dp-container">
                     <label>Telah Dibayar / DP (Rp)</label>
-                    <input type="number" id="inp-dp" placeholder="Kosongkan jika belum ada pembayaran" value="" oninput="updatePreview()" style="border-color: var(--success);">
-                    <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:5px;">*Jika nominal Dibayar = Total, otomatis dianggap LUNAS.</small>
+                    <input type="number" id="inp-dp" placeholder="Kosongkan jika belum ada" value="" oninput="updatePreview()" style="border-color: var(--success);">
                 </div>
 
                 <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top:20px; display: flex; flex-direction: column; gap: 10px;">
-                    <!-- TOMBOL RESET DITAMBAHKAN DI SINI -->
                     <button class="btn" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid #ef4444;" onclick="resetForm()">🔄 Buat Baru / Reset Form</button>
-
                     <button class="btn btn-success" onclick="saveDocumentToDB()">💾 Simpan ke Database</button>
                     <div style="display: flex; gap: 10px;">
-                       <button class="btn" style="flex:1;" onclick="window.print()">🖨️ Cetak PDF</button>
+                      <button class="btn" style="flex:1;" onclick="cetakPDF()">🖨️ Cetak PDF</button>
                        <button class="btn btn-wa" style="flex:1;" onclick="sendWhatsApp()">💬 Kirim WA</button>
                     </div>
                 </div>
             </div>
 
+            <!-- PREVIEW PANEL -->
             <div class="preview-panel">
                 <div id="preview-scaler">
                     <div id="invoice-paper">
@@ -323,33 +327,36 @@
                         <img class="watermark-bg" src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Watermark">
                         <div id="stamp-lunas" class="lunas-stamp">LUNAS</div>
                         
-                        <div class="header">
-                            <div class="company-profile">
-                                <img id="company-logo" src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Logo Yugo Laser">
-                                <div class="company-details">
-                                    <h1>Yugo Laser Store Bali</h1>
-                                    <p>Jl. Bhumi Kertha Blok D3. no 36d</p>
-                                    <p>Kerobokan Kaja, Badung - Bali 80361</p>
-                                    <p><strong>0853-3778-3223</strong> | yugo.laserart@gmail.com</p>
+                        <!-- HEADER ELEGAN MAROON -->
+                        <div class="invoice-header-bg">
+                            <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 3;">
+                                <div style="display: flex; align-items: center; gap: 20px;">
+                                    <img src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Logo Yugo Laser" style="width: 115px; height: 115px; object-fit: contain; background: white; border-radius: 50%; padding: 4px; border: 2px solid #ffd700;">
+                                    <div class="company-details" style="text-align: left;">
+                                        <h1 style="margin: 0; font-size: 28pt; font-weight: 900; color: #fff;">Yugo Laser Bali</h1>
+                                        <p style="margin: 2px 0 8px 0; font-size: 12pt; font-weight: 700; color: #ffd700;">Laser Cutting and Engraving Service</p>
+                                        <p style="margin: 1px 0; font-size: 13pt; color: #fff;">Jl. Bhumi Kertha Blok D3. No 36D<br>Kerobokan Kaja, Badung - Bali 80361</p>
+                                        <p style="margin: 1px 0; font-size: 13pt; color: #fff;"><strong>0853-3778-3223</strong> &nbsp;|&nbsp; yugo.laserart@gmail.com</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="invoice-title">
-                                <h1 id="prev-doc-title">ESTIMATE</h1>
-                                <p id="prev-doc-subtitle">Official Quote</p>
+                                <div class="invoice-title" style="text-align: right;">
+                                    <h1 id="prev-doc-title" style="margin: 0px; font-size: 45pt; font-weight: 900; color: #fff;">ESTIMATE</h1>
+                                    <p id="prev-doc-subtitle" style="margin: 1px 0 0 0; font-size: 20pt; font-weight: bold; color: #ffd700;">OFFICIAL QUOTE</p>
+                                </div>
                             </div>
                         </div>
 
                         <div class="info-section">
                             <div class="bill-to">
-                                <p style="font-size:8pt; color:#888; margin-bottom:5px;">KEPADA YTH:</p>
-                                <p id="prev-client-name" style="font-size: 11pt;">-</p>
+                                <p style="font-size:12pt; color:#000; margin-bottom:5px;">BILL TO</p>
+                                <p id="prev-client-name" style="font-size: 12pt;">-</p>
                                 <div id="prev-client-addr"></div>
                                 <div id="prev-client-phone"></div>
                             </div>
                             <div class="meta-data">
                                 <table class="meta-table">
                                     <tr><td>NO. REF</td><td id="prev-est-no" style="font-weight: 700; color: #000;">---</td></tr>
-                                    <tr><td>TANGGAL</td><td id="prev-date" style="font-weight: 700; color: #000;">---</td></tr>
+                                    <tr><td>DATE/TANGGAL</td><td id="prev-date" style="font-weight: 700; color: #000;">---</td></tr>
                                 </table>
                             </div>
                         </div>
@@ -357,9 +364,9 @@
                         <table class="inv-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 45%;">KETERANGAN</th>
+                                    <th style="width: 45%;">DESCRIPTION</th>
                                     <th style="width: 10%; text-align: center;">QTY</th>
-                                    <th style="width: 20%; text-align: right;">HARGA</th>
+                                    <th style="width: 20%; text-align: right;">PRICE</th>
                                     <th style="width: 25%; text-align: right;">TOTAL</th>
                                 </tr>
                             </thead>
@@ -369,26 +376,39 @@
                         <div class="calc-section">
                             <div class="calc-row"><span>Subtotal</span><span id="prev-subtotal">Rp0</span></div>
                             <div class="calc-row" id="row-discount" style="color: #ef4444;"><span>Diskon</span><span id="prev-discount">-Rp0</span></div>
-                            <div class="calc-row" id="row-tax"><span>Pajak (<span id="prev-tax-pct">0</span>%)</span><span id="prev-tax">Rp0</span></div>
-                            <div class="calc-row total"><span>TOTAL KESELURUHAN</span><span id="prev-grand-total">Rp0</span></div>
+                            <div class="calc-row" id="row-tax"><span>Additional (<span id="prev-tax-pct">0</span>%)</span><span id="prev-tax">Rp0</span></div>
+                            <div class="calc-row total"><span>TOTAL</span><span id="prev-grand-total">Rp0</span></div>
                             <div class="calc-row dp" id="row-dp"><span>Telah Dibayar (DP)</span><span id="prev-dp">Rp0</span></div>
                             <div class="calc-row sisa" id="row-sisa"><span>SISA TAGIHAN</span><span id="prev-sisa">Rp0</span></div>
                         </div>
-
-                        <div class="footer">
-                            <div style="flex:1;">
-                                <h4 style="margin: 0 0 5px 0; color:#000;">Info Pembayaran</h4>
-                                <p style="margin:2px 0"><strong>BCA</strong> 3740-691-014 (Giovanni Pascal P.)</p>
-                                <p style="margin:2px 0"><strong>DANA/GOPAY</strong> 0813-3778-4497 / 0812-6235-6835</p>
+                        
+                        <!-- PAYMENT METHOD & QRIS -->
+                        <div class="footer" style="margin-top: 5px; display: flex; gap: 20px; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 2px 0; color:#000; font-size: 15pt; text-transform: uppercase;">Payment Method</h4>
+                                <p style="margin: 0; font-size: 12pt; line-height: 1.4; color: #000;">
+                                    <strong><em><u>Bank Central Asia ( BCA )</u></em></strong><br>Account Number : 3740-691-014<br>
+                                    <strong><em><u>Bank Rakyat Indonesia ( BRI )</u></em></strong><br>Account Number : 4631-0101-9861-537<br>                         
+                                    <strong><em><u>Under/Name : Giovanni Pascal Plouseerth</u></em></strong>
+                                </p>
                             </div>
-                            <div style="flex:1; text-align:right;">
-                                <p style="line-height: 1.4;"><strong>Syarat & Ketentuan:</strong><br>
+                            <div style="flex: 1; text-align: right;">
+                                <h4 style="margin: 0 0 0px 0; color:#000; font-size: 19pt;">Scan QRIS for Payment</h4>
+                                <img src="https://i.postimg.cc/L6h4GLwC/Kode-QRIS-Yugo-Laser-Store-Bali-KT-TR-(1).png" alt="QRIS" style="width: 270px; height: auto; border-radius: 10px; border: 2px solid #ccc;">
+                            </div>
+                        </div>
+
+                        <!-- SYARAT & KETENTUAN -->
+                        <div style="position: absolute; bottom: 12mm; left: 20mm; right: 20mm; text-align: left; z-index: 3;">
+                            <h4 style="margin: 0 0 2px 0; color:#600; font-size: 8.5pt; text-transform: uppercase;">Syarat & Ketentuan</h4>
+                            <p style="line-height: 1.2; font-size: 11pt; color: #600; margin:0;">
                                 1. Harga sewaktu-waktu dapat berubah.<br>
                                 2. DP Minimal 50% untuk mulai pengerjaan.<br>
                                 3. Revisi desain maksimal 2x.<br>
-                                4. Barang >1 bulan bukan tanggung jawab kami.</p>
-                            </div>
+                                4. Barang >1 bulan bukan tanggung jawab kami.
+                            </p>
                         </div>
+                        <div class="invoice-footer-bg"></div>
                     </div>
                 </div>
             </div>
@@ -400,6 +420,18 @@
                 <h2 style="color: white; margin-top:0;">Laporan & Analitik Studio</h2>
                 
                 <div class="stat-grid">
+                    <div class="stat-card" style="border-top-color: var(--danger); cursor: pointer;" onclick="filterByCard('piutang')">
+                        <h4>Piutang (Belum Lunas)</h4>
+                        <h2 id="dash-piutang" style="color: var(--danger);">Rp 0</h2>
+                    </div>
+                    <div class="stat-card" style="border-top-color: #f59e0b; cursor: pointer;" onclick="filterByCard('lunas')">
+                        <h4>Invoice Lunas</h4>
+                        <h2 id="dash-paid-count">0</h2>
+                    </div>
+                    <div class="stat-card" style="border-top-color: #3b82f6; cursor: pointer;" onclick="filterByCard('quotation')">
+                        <h4>Total Quotation (Bulan Ini)</h4>
+                        <h2 id="dash-quotation-count" style="color: #3b82f6;">0</h2>
+                    </div>
                     <div class="stat-card" style="border-top-color: var(--accent);">
                         <h4>Total Tagihan (Omzet)</h4>
                         <h2 id="dash-gross" style="color: var(--accent);">Rp 0</h2>
@@ -408,23 +440,28 @@
                         <h4>Uang Masuk (Lunas + DP)</h4>
                         <h2 id="dash-income" style="color: var(--success);">Rp 0</h2>
                     </div>
-                    <div class="stat-card" style="border-top-color: var(--danger);">
-                        <h4>Piutang (Belum Lunas)</h4>
-                        <h2 id="dash-piutang" style="color: var(--danger);">Rp 0</h2>
-                    </div>
-                    <div class="stat-card" style="border-top-color: #f59e0b;">
-                        <h4>Invoice Lunas</h4>
-                        <h2 id="dash-paid-count">0</h2>
-                    </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
                     <h3 style="color: white; margin:0; border:none; padding:0;">Riwayat Dokumen</h3>
-                    
                     <div style="display:flex; gap:10px; align-items:center;">
                         <input type="month" id="filter-month" onchange="fetchDocuments()" style="background:#1e293b; color:white; border:1px solid var(--border); border-radius:6px; padding:8px; width:auto; font-weight:bold;">
-                        <button class="btn-icon" onclick="fetchDocuments()">🔄</button>
+                        <button class="btn-icon" onclick="fetchDocuments()">🔄 Refresh</button>
                     </div>
+                </div>
+                
+                <div class="filter-bar">
+                    <input type="text" id="search-input" placeholder="🔍 Cari Nama, No Ref, atau Item..." oninput="applyFilters()">
+                    <select id="filter-tipe" onchange="applyFilters()">
+                        <option value="All">Semua Tipe</option>
+                        <option value="Estimate">Quotation / Estimate</option>
+                        <option value="Invoice">Invoice</option>
+                    </select>
+                    <select id="filter-status" onchange="applyFilters()">
+                        <option value="Semua">Semua Status Bayar</option>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Lunas">Belum Lunas / DP</option>
+                    </select>
                 </div>
                 
                 <div class="table-responsive">
@@ -450,7 +487,7 @@
     </div>
 </div>
 
-<!-- MODAL DAFTAR PELANGGAN -->
+<!-- MODAL KLIEN -->
 <div id="client-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -460,61 +497,36 @@
                 <button class="close-btn" onclick="closeClientModal()">×</button>
             </div>
         </div>
-
         <div id="import-section" style="display: none;">
-            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8;">
-                <strong>Cara Import:</strong> Paste teks daftar pelanggan Anda di bawah. Sistem akan otomatis memisahkan Nama dan Nomor Telepon.
-            </p>
-            <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;" placeholder="Contoh Paste:\nGiovanni 081262356835\nSantika Putri +62 859-6042-3472"></textarea>
+            <textarea id="import-data" rows="6" placeholder="Paste data pelanggan di sini..." style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;"></textarea>
             <button class="btn-small btn-success" onclick="processSmartImport()">Mulai Import ke Cloud</button>
         </div>
-
         <div class="table-responsive">
             <table class="data-table" style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Nama & Alamat</th>
-                        <th>No. HP</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="client-table-body">
-                </tbody>
+                <thead><tr><th>Nama & Alamat</th><th>No. HP</th><th>Aksi</th></tr></thead>
+                <tbody id="client-table-body"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- MODAL KATALOG BARANG -->
+<!-- MODAL KATALOG -->
 <div id="item-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
             <h2 style="margin:0; color:var(--primary);">Katalog Barang & Jasa</h2>
             <button class="close-btn" onclick="closeItemModal()">×</button>
         </div>
-        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 0;">
-            Katalog ini akan otomatis muncul sebagai saran saat Anda mengetik di kolom nama barang. Tambahkan barang baru menggunakan tombol "💾 Simpan ke Katalog" saat membuat tagihan.
-        </p>
         <div class="table-responsive">
             <table class="data-table" style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Nama Barang/Jasa</th>
-                        <th>Harga Standar</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="item-table-body">
-                </tbody>
+                <thead><tr><th>Nama Barang/Jasa</th><th>Harga Standar</th><th>Aksi</th></tr></thead>
+                <tbody id="item-table-body"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // 1. FIREBASE CONFIGURATION
-    // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyC0_6eKS9fiExzSLd3mWdcJ2oB5mwi0SPY",
         authDomain: "kalkulator-yugolaser.firebaseapp.com",
@@ -530,24 +542,17 @@
         db = firebase.firestore();
     } catch(e) { console.error("Firebase Error:", e); }
 
-    // ==========================================
-    // 1b. FIREBASE AUTH (SISTEM LOGIN)
-    // ==========================================
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
-            
             changeDocType();
             document.getElementById('inp-date').valueAsDate = new Date();
             document.getElementById('filter-month').value = new Date().toISOString().substring(0, 7);
             renderItems();
             fitPaperToScreen();
             setupClientAutocomplete();
-            if(db) {
-                fetchClients(); 
-                fetchItemsCatalog(); // Ambil data katalog barang saat login
-            }
+            if(db) { fetchClients(); fetchItemsCatalog(); }
         } else {
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
@@ -558,25 +563,19 @@
         const email = document.getElementById('log-email').value;
         const pwd = document.getElementById('log-pwd').value;
         if(!email || !pwd) return alert('Email dan Password wajib diisi!');
-
-        firebase.auth().signInWithEmailAndPassword(email, pwd)
-            .catch(error => { alert("Gagal Login: " + error.message); });
+        firebase.auth().signInWithEmailAndPassword(email, pwd).catch(error => { alert("Gagal Login: " + error.message); });
     }
 
     function logoutUser() {
-        if(confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
-            firebase.auth().signOut();
-        }
+        if(confirm("Apakah Anda yakin ingin keluar?")) firebase.auth().signOut();
     }
 
-
-    // ==========================================
-    // 2. CORE LOGIC & STATE
-    // ==========================================
     let items = [{ name: '', details: '', qty: '', price: '' }];
     let clientsData = []; 
-    let itemLibraryData = []; // State untuk menampung katalog barang
-    
+    let itemLibraryData = [];
+    let convertingFromDocNo = null; 
+    let allDocsMonth = [];
+
     const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
     function switchTab(tab) {
@@ -587,14 +586,12 @@
         
         document.getElementById(`view-${tab}`).classList.add('active');
         document.getElementById(`tab-${tab}`).classList.add('active');
-
         if(tab === 'dashboard' && db) fetchDocuments();
     }
 
     function sendWhatsApp() {
         const phone = document.getElementById('inp-client-phone').value;
         if(!phone) return alert('Nomor HP/WA Klien belum diisi!');
-        
         let formattedPhone = phone.replace(/\D/g, '');
         if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.substring(1);
         
@@ -602,49 +599,28 @@
         const docType = document.getElementById('inp-doc-type').value;
         const docNo = document.getElementById('inp-est-no').value;
         const grandTotal = document.getElementById('prev-grand-total').innerText;
-        const sisa = document.getElementById('prev-sisa').innerText;
         
-        let message = `Halo Kak *${cName}*,\n\nBerikut adalah ringkasan *${docType}* dari Yugo Laser Store.\nNo Ref: *${docNo}*\nTotal Keseluruhan: *${grandTotal}*\n`;
-        
-        if (docType === 'Invoice' && document.getElementById('row-sisa').style.display !== 'none' && sisa !== 'Rp\xa00' && sisa !== 'Rp0') {
-             message += `Sisa Tagihan: *${sisa}*\n`;
-        }
-
-        message += `\nMohon konfirmasinya. Terima kasih! 🙏`;
-        
+        let message = `Halo Kak *${cName}*,\n\nBerikut adalah ringkasan *${docType}* dari Yugo Laser Store.\nNo Ref: *${docNo}*\nTotal: *${grandTotal}*\n\nTerima kasih! 🙏`;
         window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
 
-    // ==========================================
-    // MANAJEMEN PELANGGAN MODAL & SMART IMPORT
-    // ==========================================
     function openClientModal() {
         const modal = document.getElementById('client-modal');
         const tbody = document.getElementById('client-table-body');
         tbody.innerHTML = '';
-        
         if (clientsData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada data pelanggan tersimpan.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada data pelanggan.</td></tr>';
         } else {
             clientsData.forEach(c => {
                 const safeName = c.name.replace(/'/g, "\\'");
                 const safePhone = c.phone ? c.phone.replace(/'/g, "\\'") : '';
                 const safeAddress = c.address ? c.address.replace(/'/g, "\\'") : '';
-                const safeId = c.id;
-
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong style="color: var(--primary);">${c.name}</strong><br><small style="color: #94a3b8;">${c.address || 'Alamat blm diisi'}</small></td>
+                        <td><strong>${c.name}</strong><br><small>${c.address || ''}</small></td>
                         <td>${c.phone || '-'}</td>
-                        <td>
-                            <div style="display:flex; gap: 5px; flex-wrap:wrap;">
-                                <button class="btn-small btn-success" onclick="selectClientFromModal('${safeName}', '${safePhone}', '${safeAddress}')">Pilih</button>
-                                <button class="btn-small btn-secondary" onclick="editClientData('${safeId}', '${safeName}', '${safePhone}', '${safeAddress}')">Edit</button>
-                                <button class="btn-small btn-danger" onclick="deleteClientData('${safeId}')">Hapus</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                        <td><button class="btn-small btn-success" onclick="selectClientFromModal('${safeName}', '${safePhone}', '${safeAddress}')">Pilih</button></td>
+                    </tr>`;
             });
         }
         modal.style.display = 'flex';
@@ -660,35 +636,6 @@
         closeClientModal();
     }
 
-    async function editClientData(id, oldName, oldPhone, oldAddress) {
-        const newName = prompt("Edit Nama Pelanggan:", oldName);
-        if(newName === null || newName.trim() === '') return;
-        const newPhone = prompt("Edit No HP/WA:", oldPhone);
-        if(newPhone === null) return;
-        const newAddress = prompt("Edit Alamat:", oldAddress);
-        if(newAddress === null) return;
-
-        const newId = newName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-        try {
-            if(newId !== id) {
-                await db.collection("clients").doc(newId).set({ name: newName, phone: newPhone, address: newAddress }, { merge: true });
-                await db.collection("clients").doc(id).delete();
-            } else {
-                await db.collection("clients").doc(id).update({ phone: newPhone, address: newAddress });
-            }
-            await fetchClients(); openClientModal();
-        } catch(e) { alert("Gagal mengupdate data pelanggan."); }
-    }
-
-    async function deleteClientData(id) {
-        if(confirm("Apakah Anda yakin ingin menghapus pelanggan ini dari database?")) {
-            try {
-                await db.collection("clients").doc(id).delete();
-                await fetchClients(); openClientModal();
-            } catch(e) { alert("Gagal menghapus data pelanggan."); }
-        }
-    }
-
     function toggleImportSection() {
         const section = document.getElementById('import-section');
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
@@ -696,49 +643,28 @@
 
     async function processSmartImport() {
         const textData = document.getElementById('import-data').value;
-        if(!textData.trim()) return alert("Kolom teks masih kosong!");
-        
+        if(!textData.trim()) return alert("Kolom kosong!");
         const lines = textData.split('\n');
         let count = 0; const batch = db.batch();
-
         try {
-            document.getElementById('import-section').innerHTML = '<p style="color:var(--primary);">Sedang memproses penyimpanan massal... Harap tunggu...</p>';
-
             for(let line of lines) {
                 line = line.trim();
                 if(!line) continue;
                 const match = line.match(/^(.*?)([\+0-9][0-9\-\s\(\)]+)$/);
-                let name = "", phone = "";
-                if(match) { name = match[1].trim(); phone = match[2].trim(); } 
-                else { name = line; phone = ""; }
-                
-                name = name.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+                let name = match ? match[1].trim() : line;
+                let phone = match ? match[2].trim() : "";
                 if(name) {
                     const id = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-                    if (!id) continue;
-                    const ref = db.collection("clients").doc(id);
-                    batch.set(ref, { name: name, phone: phone, address: '' }, { merge: true });
+                    batch.set(db.collection("clients").doc(id), { name, phone, address: '' }, { merge: true });
                     count++;
                 }
             }
-
             await batch.commit();
-            alert(`${count} Data Pelanggan berhasil diproses ke Cloud!`);
-            
-            document.getElementById('import-section').innerHTML = `
-                <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #94a3b8;">
-                    <strong>Cara Import:</strong> Paste teks daftar pelanggan Anda di bawah. Sistem akan otomatis memisahkan Nama dan Nomor Telepon.
-                </p>
-                <textarea id="import-data" rows="6" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; color: white; border: 1px solid var(--border); margin-bottom: 10px;"></textarea>
-                <button class="btn-small btn-success" onclick="processSmartImport()">Mulai Import ke Cloud</button>
-            `;
+            alert(`${count} Klien berhasil diimport!`);
             toggleImportSection(); await fetchClients(); openClientModal();
-        } catch(e) { alert("Terjadi kesalahan saat meng-import data: " + e.message); }
+        } catch(e) { alert("Error: " + e.message); }
     }
 
-    // ==========================================
-    // 3. EDITOR & PREVIEW LOGIC
-    // ==========================================
     function changeDocType() {
         const type = document.getElementById('inp-doc-type').value;
         if (type === 'Invoice') {
@@ -753,7 +679,7 @@
             document.getElementById('dp-container').style.display = 'none';
             document.getElementById('inp-dp').value = ''; 
         }
-        generateRandomDocNo();
+        if (!convertingFromDocNo && !document.getElementById('inp-est-no').value.trim()) generateRandomDocNo();
         updatePreview();
     }
 
@@ -762,33 +688,22 @@
         const prefix = type === 'Invoice' ? 'INV-' : 'QT-';
         const rnd = Math.random().toString(36).substring(2, 7).toUpperCase();
         document.getElementById('inp-est-no').value = prefix + rnd;
+        convertingFromDocNo = null;
         updatePreview();
     }
 
-    // --- FUNGSI RESET / BUAT BARU ---
     function resetForm() {
-        if(!confirm("Apakah Anda yakin ingin mereset form dan membuat dokumen baru? Data yang belum disimpan akan hilang.")) {
-            return;
-        }
-
-        // 1. Kosongkan data Klien
+        if(!confirm("Reset form dan buat dokumen baru?")) return;
+        convertingFromDocNo = null;
         document.getElementById('inp-client-name').value = '';
         document.getElementById('inp-client-phone').value = '';
         document.getElementById('inp-client-addr').value = '';
-
-        // 2. Reset Item Pekerjaan kembali menjadi 1 baris kosong
         items = [{ name: '', details: '', qty: '', price: '' }];
         renderItems();
-
-        // 3. Kosongkan Diskon, Pajak, dan DP
         document.getElementById('inp-discount').value = '';
         document.getElementById('inp-tax').value = '';
         document.getElementById('inp-dp').value = '';
-
-        // 4. Set tanggal kembali ke hari ini
         document.getElementById('inp-date').valueAsDate = new Date();
-
-        // 5. Generate Nomor Dokumen Baru & Update Preview
         generateRandomDocNo();
         updatePreview();
     }
@@ -802,18 +717,15 @@
                 <div class="item-card-header">
                     <span style="font-weight:bold; color:var(--primary)">Item ${idx + 1}</span>
                     <div style="display:flex; gap:5px;">
-                        <button class="btn-success-small" onclick="saveItemToCatalog(${idx})" title="Simpan sebagai Preset">💾 Simpan ke Katalog</button>
+                        <button class="btn-success-small" onclick="saveItemToCatalog(${idx})">💾 Simpan</button>
                         <button class="btn-danger" onclick="deleteItem(${idx})">Hapus</button>
                     </div>
                 </div>
-                <div class="form-group" style="position:relative;">
-                    <input type="text" id="inp-item-name-${idx}" placeholder="Ketik 3 huruf nama barang / jasa..." value="${item.name}" autocomplete="off" oninput="handleItemAutocomplete(${idx}, this.value)">
-                    <div id="autocomplete-item-${idx}" class="autocomplete-items"></div>
-                </div>
-                <div class="form-group"><textarea placeholder="Catatan/Spesifikasi (Opsional)..." rows="1" oninput="updateItem(${idx}, 'details', this.value)">${item.details}</textarea></div>
+                <div class="form-group"><input type="text" id="inp-item-name-${idx}" placeholder="Nama barang..." value="${item.name}" autocomplete="off" oninput="handleItemAutocomplete(${idx}, this.value)"><div id="autocomplete-item-${idx}" class="autocomplete-items"></div></div>
+                <div class="form-group"><textarea placeholder="Spesifikasi..." rows="1" oninput="updateItem(${idx}, 'details', this.value)">${item.details}</textarea></div>
                 <div class="item-row-grid">
                     <div><label>Qty</label><input type="number" placeholder="1" value="${item.qty}" oninput="updateItem(${idx}, 'qty', this.value)"></div>
-                    <div><label>Harga Satuan</label><input type="number" placeholder="0" value="${item.price}" oninput="updateItem(${idx}, 'price', this.value)"></div>
+                    <div><label>Harga</label><input type="number" placeholder="0" value="${item.price}" oninput="updateItem(${idx}, 'price', this.value)"></div>
                 </div>`;
             container.appendChild(card);
         });
@@ -824,16 +736,12 @@
     function deleteItem(idx) { if(items.length > 1) { items.splice(idx, 1); renderItems(); } }
     function updateItem(idx, key, val) { items[idx][key] = val; updatePreview(); }
 
-    function updatePreview() {
+        function updatePreview() {
         document.getElementById('prev-est-no').innerText = document.getElementById('inp-est-no').value;
         const d = new Date(document.getElementById('inp-date').value);
-        if(!isNaN(d)) {
-            const tglOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-            document.getElementById('prev-date').innerText = d.toLocaleDateString('id-ID', tglOptions);
-        }
+        if(!isNaN(d)) document.getElementById('prev-date').innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         
-        const cName = document.getElementById('inp-client-name').value;
-        document.getElementById('prev-client-name').innerText = cName || '-';
+        document.getElementById('prev-client-name').innerText = document.getElementById('inp-client-name').value || '-';
         document.getElementById('prev-client-addr').innerText = document.getElementById('inp-client-addr').value || '';
         document.getElementById('prev-client-phone').innerText = document.getElementById('inp-client-phone').value || '';
 
@@ -844,26 +752,19 @@
         items.forEach(i => {
             const q = i.qty === '' ? 1 : (parseFloat(i.qty) || 0);
             const p = i.price === '' ? 0 : (parseFloat(i.price) || 0);
-            
             const total = q * p; subtotal += total;
-            const desc = i.details ? `<br><small style="color:#777; font-size: 8pt;">${i.details}</small>` : '';
+            const desc = i.details ? `<br><small style="color:#777;">${i.details}</small>` : '';
             tbody.innerHTML += `<tr><td><strong>${i.name || '-'}</strong>${desc}</td><td style="text-align:center;">${q}</td><td style="text-align:right;">${formatRp(p)}</td><td style="text-align:right; font-weight:bold;">${formatRp(total)}</td></tr>`;
         });
 
-        const discStr = document.getElementById('inp-discount').value;
-        const taxPctStr = document.getElementById('inp-tax').value;
-        const disc = discStr === '' ? 0 : (parseFloat(discStr) || 0);
-        const taxPct = taxPctStr === '' ? 0 : (parseFloat(taxPctStr) || 0);
-        
+        const disc = parseFloat(document.getElementById('inp-discount').value) || 0;
+        const taxPct = parseFloat(document.getElementById('inp-tax').value) || 0;
         const taxRp = (subtotal - disc) * (taxPct / 100);
         const grand = (subtotal - disc) + taxRp;
 
         const isInvoice = document.getElementById('inp-doc-type').value === 'Invoice';
-        const dpStr = document.getElementById('inp-dp').value;
-        const dp = dpStr === '' ? 0 : (parseFloat(dpStr) || 0);
-        let sisa = grand - dp;
-        if(sisa < 0) sisa = 0;
-        
+        const dp = parseFloat(document.getElementById('inp-dp').value) || 0;
+        let sisa = Math.max(0, grand - dp);
         const isPaid = (dp >= grand && grand > 0);
 
         document.getElementById('prev-subtotal').innerText = formatRp(subtotal);
@@ -871,45 +772,34 @@
         document.getElementById('prev-tax-pct').innerText = taxPct;
         document.getElementById('prev-tax').innerText = formatRp(taxRp);
         document.getElementById('prev-grand-total').innerText = formatRp(grand);
-        
         document.getElementById('prev-dp').innerText = formatRp(dp);
         document.getElementById('prev-sisa').innerText = formatRp(sisa);
 
         document.getElementById('row-discount').style.display = disc > 0 ? 'flex' : 'none';
         document.getElementById('row-tax').style.display = taxPct > 0 ? 'flex' : 'none';
-
-        if (isInvoice && dp > 0 && !isPaid) {
-            document.getElementById('row-dp').style.display = 'flex';
-            document.getElementById('row-sisa').style.display = 'flex';
-        } else {
-            document.getElementById('row-dp').style.display = 'none';
-            document.getElementById('row-sisa').style.display = 'none';
-        }
-
+        
+        // --- BAGIAN YANG DIPERBAIKI ---
+        // Jika Invoice & belum lunas -> Tampilkan DP & Sisa. Jika sudah lunas -> Sembunyikan.
+        document.getElementById('row-dp').style.display = (isInvoice && !isPaid) ? 'flex' : 'none';
+        document.getElementById('row-sisa').style.display = (isInvoice && !isPaid) ? 'flex' : 'none';
+        
+        // Stamp LUNAS hanya muncul jika sudah terbayar penuh
         document.getElementById('stamp-lunas').style.display = (isInvoice && isPaid) ? 'block' : 'none';
-
-        const noRefNow = document.getElementById('inp-est-no').value;
-        const namaKlienNow = document.getElementById('inp-client-name').value || 'Pelanggan';
-        document.title = `${noRefNow} - ${namaKlienNow}`;
     }
 
-    // ==========================================
-    // 4. FIREBASE AUTOCOMPLETE CLIENT & ITEMS
-    // ==========================================
     
-    // --- Autocomplete Klien ---
+
     function setupClientAutocomplete() {
         const input = document.getElementById("inp-client-name");
-        input.addEventListener("input", function(e) {
+        input.addEventListener("input", function() {
             let val = this.value;
             const list = document.getElementById("autocomplete-list");
             list.innerHTML = "";
             if (!val || val.length < 2) return; 
-
             clientsData.forEach(client => {
                 if (client.name.toLowerCase().includes(val.toLowerCase())) {
                     const div = document.createElement("div");
-                    div.innerHTML = `<strong style="color:var(--primary)">${client.name}</strong> - ${client.phone}`;
+                    div.innerHTML = `<strong>${client.name}</strong> - ${client.phone}`;
                     div.addEventListener("click", function() {
                         input.value = client.name;
                         document.getElementById("inp-client-phone").value = client.phone || "";
@@ -925,38 +815,31 @@
 
     async function fetchClients() {
         if(!db) return;
-        try {
-            const snapshot = await db.collection("clients").get();
-            clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch(e) { console.error("Gagal load klien", e); }
+        const snapshot = await db.collection("clients").get();
+        clientsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
 
-    // --- Autocomplete & Manajemen Katalog Barang ---
     async function fetchItemsCatalog() {
         if(!db) return;
-        try {
-            const snapshot = await db.collection("items").get();
-            itemLibraryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } catch(e) { console.error("Gagal load katalog barang", e); }
+        const snapshot = await db.collection("items").get();
+        itemLibraryData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
 
     function handleItemAutocomplete(idx, val) {
         items[idx].name = val;
         updatePreview();
-        
         const list = document.getElementById(`autocomplete-item-${idx}`);
         list.innerHTML = "";
-        if (!val || val.length < 3) return; // Minimal ketik 3 huruf untuk cari barang
-
+        if (!val || val.length < 3) return;
         itemLibraryData.forEach(catalogItem => {
             if (catalogItem.name.toLowerCase().includes(val.toLowerCase())) {
                 const div = document.createElement("div");
-                div.innerHTML = `<strong style="color:var(--primary)">${catalogItem.name}</strong> - ${formatRp(catalogItem.price)}`;
+                div.innerHTML = `<strong>${catalogItem.name}</strong> - ${formatRp(catalogItem.price)}`;
                 div.addEventListener("click", function() {
                     items[idx].name = catalogItem.name;
                     items[idx].details = catalogItem.details || '';
                     items[idx].price = catalogItem.price || '';
-                    renderItems(); 
+                    renderItems();
                     list.innerHTML = "";
                 });
                 list.appendChild(div);
@@ -966,220 +849,149 @@
 
     async function saveItemToCatalog(idx) {
         const item = items[idx];
-        if(!item.name) return alert("Nama barang/jasa wajib diisi sebelum menyimpan ke katalog!");
-        
+        if(!item.name) return alert("Nama item wajib diisi!");
         const id = item.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-        const payload = {
-            name: item.name,
-            details: item.details || '',
-            price: parseFloat(item.price) || 0
-        };
-        
-        try {
-            await db.collection("items").doc(id).set(payload, { merge: true });
-            alert(`Barang "${item.name}" berhasil disimpan sebagai Preset!`);
-            fetchItemsCatalog(); // Refresh data katalog di latar belakang
-        } catch(e) {
-            alert("Gagal menyimpan barang: " + e.message);
-        }
+        await db.collection("items").doc(id).set({ name: item.name, details: item.details || '', price: parseFloat(item.price) || 0 }, { merge: true });
+        alert("Berhasil disimpan ke katalog!");
+        fetchItemsCatalog();
     }
 
     function openItemModal() {
         const modal = document.getElementById('item-modal');
         const tbody = document.getElementById('item-table-body');
         tbody.innerHTML = '';
-        
-        if (itemLibraryData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Katalog masih kosong. Silakan simpan barang dari menu utama.</td></tr>';
-        } else {
-            itemLibraryData.forEach(c => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong style="color: var(--primary);">${c.name}</strong><br><small style="color: #94a3b8;">${c.details || '-'}</small></td>
-                        <td>${formatRp(c.price)}</td>
-                        <td>
-                            <button class="btn-small btn-danger" onclick="deleteCatalogItem('${c.id}')">Hapus</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
+        itemLibraryData.forEach(c => {
+            tbody.innerHTML += `<tr><td><strong>${c.name}</strong></td><td>${formatRp(c.price)}</td><td><button class="btn-small btn-danger" onclick="deleteCatalogItem('${c.id}')">Hapus</button></td></tr>`;
+        });
         modal.style.display = 'flex';
     }
     
     function closeItemModal() { document.getElementById('item-modal').style.display = 'none'; }
     
     async function deleteCatalogItem(id) {
-        if(confirm("Apakah Anda yakin ingin menghapus barang ini dari katalog?")) {
-            try {
-                await db.collection("items").doc(id).delete();
-                await fetchItemsCatalog();
-                openItemModal(); // Refresh modal
-            } catch(e) { alert("Gagal menghapus barang."); }
+        if(confirm("Hapus barang dari katalog?")) {
+            await db.collection("items").doc(id).delete();
+            fetchItemsCatalog(); openItemModal();
         }
     }
 
-    // Menutup autocomplete jika mengklik area lain
-    document.addEventListener("click", function (e) {
-        if(e.target.id !== "inp-client-name") {
-            const cList = document.getElementById("autocomplete-list");
-            if(cList) cList.innerHTML = "";
-        }
-        if(!e.target.id.startsWith("inp-item-name-")) {
-            const lists = document.querySelectorAll('[id^="autocomplete-item-"]');
-            lists.forEach(l => l.innerHTML = "");
-        }
-    });
-
-    // --- Simpan Invoice ke Database ---
     async function saveDocumentToDB() {
-        if(!db) return alert("Firebase belum terhubung.");
-        
+        if(!db) return;
         const docType = document.getElementById('inp-doc-type').value;
+        const docNo = document.getElementById('inp-est-no').value;
         const cName = document.getElementById('inp-client-name').value;
         if(!cName) return alert("Nama klien wajib diisi!");
 
         const dDate = document.getElementById('inp-date').value;
-        const grandTotal = document.getElementById('prev-grand-total').innerText.replace(/[^0-9,-]+/g,"");
-        
-        const dpStr = document.getElementById('inp-dp').value;
-        const dpVal = dpStr === '' ? 0 : parseFloat(dpStr);
-        const grandInt = parseInt(grandTotal) || 0;
-        let sisaVal = grandInt - dpVal;
-        if(sisaVal < 0) sisaVal = 0;
-        const isPaid = (dpVal >= grandInt && grandInt > 0) && (docType === 'Invoice');
-
-        const cleanItems = items.map(i => ({
-            name: i.name,
-            details: i.details,
-            qty: i.qty === '' ? 1 : parseFloat(i.qty),
-            price: i.price === '' ? 0 : parseFloat(i.price)
-        }));
+        const grandTotal = parseInt(document.getElementById('prev-grand-total').innerText.replace(/[^0-9,-]+/g,"")) || 0;
+        const dpVal = parseFloat(document.getElementById('inp-dp').value) || 0;
+        let sisaVal = Math.max(0, grandTotal - dpVal);
+        const isPaid = (dpVal >= grandTotal && grandTotal > 0) && (docType === 'Invoice');
 
         const payload = {
-            docNo: document.getElementById('inp-est-no').value,
-            type: docType,
-            date: dDate,
-            monthYear: dDate.substring(0, 7),
-            clientName: cName,
-            clientPhone: document.getElementById('inp-client-phone').value,
+            docNo, type: docType, date: dDate, monthYear: dDate.substring(0, 7),
+            clientName: cName, clientPhone: document.getElementById('inp-client-phone').value,
             clientAddress: document.getElementById('inp-client-addr').value,
-            items: cleanItems,
-            discount: document.getElementById('inp-discount').value || 0,
-            tax: document.getElementById('inp-tax').value || 0,
-            dp: dpVal,
-            sisa: sisaVal,
-            grandTotal: grandInt,
-            isPaid: isPaid,
+            items: items.map(i => ({ name: i.name, details: i.details, qty: parseFloat(i.qty) || 1, price: parseFloat(i.price) || 0 })),
+            discount: parseFloat(document.getElementById('inp-discount').value) || 0,
+            tax: parseFloat(document.getElementById('inp-tax').value) || 0,
+            dp: dpVal, sisa: sisaVal, grandTotal, isPaid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         try {
-            const clientId = cName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-            const clientRef = db.collection("clients").doc(clientId);
-            await clientRef.set({ name: cName, phone: payload.clientPhone, address: payload.clientAddress, lastOrder: dDate }, { merge: true });
-
-            await db.collection("documents").doc(payload.docNo).set(payload);
-            
-            alert(`Sukses! ${docType} berhasil disimpan.`);
-            fetchClients(); 
-        } catch(error) { alert("Terjadi kesalahan saat menyimpan: " + error.message); }
+            await db.collection("documents").doc(docNo).set(payload);
+            if (convertingFromDocNo && convertingFromDocNo.startsWith('QT-') && docType === 'Invoice') {
+                await db.collection("documents").doc(convertingFromDocNo).delete();
+            }
+            convertingFromDocNo = null;
+            alert("Dokumen berhasil disimpan ke database!");
+            fetchClients();
+        } catch(e) { alert("Error: " + e.message); }
     }
     
     async function deleteDocument(docNo) {
-        if(!db) return alert("Firebase belum terhubung.");
-        const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus dokumen ${docNo} secara permanen?`);
-        if (confirmDelete) {
-            try {
-                await db.collection("documents").doc(docNo).delete();
-                alert(`Dokumen ${docNo} berhasil dihapus.`);
-                fetchDocuments(); 
-            } catch (error) { alert("Terjadi kesalahan saat menghapus dokumen."); }
+        if(confirm(`Hapus permanen dokumen ${docNo}?`)) {
+            await db.collection("documents").doc(docNo).delete();
+            fetchDocuments();
         }
     }
 
-    // ==========================================
-    // 5. DASHBOARD FILTERING & GROSS CALC
-    // ==========================================
     async function fetchDocuments() {
         if(!db) return;
-        const tbody = document.getElementById('history-table-body');
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Memuat data...</td></tr>';
+        const selectedMonth = document.getElementById('filter-month').value; 
+        const snapshot = await db.collection("documents").where("monthYear", "==", selectedMonth).get();
+        allDocsMonth = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        try {
-            const selectedMonth = document.getElementById('filter-month').value; 
-            const snapshot = await db.collection("documents").where("monthYear", "==", selectedMonth).get();
+        let uangMasuk = 0, grossIncome = 0, totalPiutang = 0, paidInvCount = 0, quotationCount = 0;
+        allDocsMonth.forEach(data => {
+            if(data.type === 'Invoice') {
+                grossIncome += data.grandTotal; 
+                uangMasuk += (data.dp || 0); 
+                if(data.isPaid) { 
+                    paidInvCount++; 
+                    if(!data.dp || data.dp < data.grandTotal) uangMasuk += (data.grandTotal - (data.dp || 0));
+                } else {
+                    totalPiutang += (data.sisa !== undefined ? data.sisa : data.grandTotal);
+                }
+            } else if (data.type === 'Estimate') { quotationCount++; }
+        });
+
+        document.getElementById('dash-income').innerText = formatRp(uangMasuk);
+        document.getElementById('dash-gross').innerText = formatRp(grossIncome); 
+        document.getElementById('dash-piutang').innerText = formatRp(totalPiutang); 
+        document.getElementById('dash-paid-count').innerText = paidInvCount;
+        document.getElementById('dash-quotation-count').innerText = quotationCount;
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchWord = document.getElementById('search-input').value.toLowerCase();
+        const typeFilter = document.getElementById('filter-tipe').value;
+        const statusFilter = document.getElementById('filter-status').value;
+
+        const filtered = allDocsMonth.filter(doc => {
+            if (searchWord && !doc.docNo.toLowerCase().includes(searchWord) && !doc.clientName.toLowerCase().includes(searchWord)) return false;
+            if (typeFilter !== 'All' && doc.type !== typeFilter) return false;
+            if (statusFilter !== 'Semua' && doc.type === 'Invoice') {
+                if (statusFilter === 'Lunas' && !doc.isPaid) return false;
+                if (statusFilter === 'Belum Lunas' && doc.isPaid) return false;
+            }
+            return true;
+        });
+        renderHistoryTable(filtered);
+    }
+
+    function renderHistoryTable(dataArray) {
+        const tbody = document.getElementById('history-table-body');
+        tbody.innerHTML = '';
+        if(dataArray.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tidak ada data.</td></tr>';
+            return;
+        }
+        dataArray.forEach(data => {
+            const badgeTipe = data.type === 'Invoice' ? '<span class="badge badge-inv">Invoice</span>' : '<span class="badge badge-est">Estimate</span>';
+            let badgeStatus = data.type === 'Invoice' ? (data.isPaid ? '<span class="badge badge-paid">LUNAS</span>' : (data.dp > 0 ? '<span class="badge badge-dp">DP</span>' : '<span class="badge badge-unpaid">BELUM</span>')) : '-';
+            const actionBtn = data.type === 'Estimate' ? `<button class="btn-small btn-success" onclick='convertToInvoice(${JSON.stringify(data)})'>Buat Invoice</button>` : `<button class="btn-small btn-secondary" onclick='loadToEditor(${JSON.stringify(data)})'>Edit</button>`;
             
-            let docsData = snapshot.docs.map(doc => doc.data());
-            docsData.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            tbody.innerHTML = '';
-            let uangMasuk = 0; 
-            let grossIncome = 0; 
-            let totalPiutang = 0; 
-            let paidInvCount = 0; 
-
-            docsData.forEach(data => {
-                if(data.type === 'Invoice') {
-                    grossIncome += data.grandTotal; 
-                    uangMasuk += (data.dp || 0); 
-                    
-                    if(data.isPaid) { 
-                        paidInvCount++; 
-                        if(!data.dp || data.dp < data.grandTotal) {
-                            uangMasuk += (data.grandTotal - (data.dp || 0));
-                        }
-                    } else {
-                        totalPiutang += (data.sisa !== undefined ? data.sisa : data.grandTotal);
-                    }
-                }
-
-                const badgeTipe = data.type === 'Invoice' ? '<span class="badge badge-inv">Invoice</span>' : '<span class="badge badge-est">Estimate</span>';
-                
-                let badgeStatus = '-';
-                if(data.type === 'Invoice') {
-                    if(data.isPaid) badgeStatus = '<span class="badge badge-paid">LUNAS</span>';
-                    else if (data.dp > 0) badgeStatus = '<span class="badge badge-dp">DP/SEBAGIAN</span>';
-                    else badgeStatus = '<span class="badge" style="background:#fee2e2; color:#dc2626; border:1px solid #ef4444;">BELUM BAYAR</span>';
-                }
-
-                const actionBtn = data.type === 'Estimate' ? 
-                    `<button class="btn-small btn-success" onclick='convertToInvoice(${JSON.stringify(data)})'>Buat Invoice</button>` : 
-                    `<button class="btn-small btn-secondary" onclick='loadToEditor(${JSON.stringify(data)})'>Lihat/Edit</button>`;
-
-                const deleteBtn = `<button class="btn-small btn-danger" onclick="deleteDocument('${data.docNo}')">Hapus</button>`;
-
-                let displayTotal = `<strong>${formatRp(data.grandTotal)}</strong>`;
-                if(data.type === 'Invoice' && !data.isPaid && data.sisa > 0) {
-                    displayTotal += `<br><small style="color:#ef4444">Sisa: ${formatRp(data.sisa)}</small>`;
-                }
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="white-space: nowrap;">${data.date}</td>
-                        <td style="font-weight:bold; color:var(--primary); white-space: nowrap;">${data.docNo}</td>
-                        <td style="min-width: 150px;">${data.clientName}</td>
-                        <td>${badgeTipe}</td>
-                        <td style="white-space: nowrap;">${displayTotal}</td>
-                        <td>${badgeStatus}</td>
-                        <td><div style="display:flex; gap: 5px;">${actionBtn} ${deleteBtn}</div></td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('dash-income').innerText = formatRp(uangMasuk);
-            document.getElementById('dash-gross').innerText = formatRp(grossIncome); 
-            document.getElementById('dash-piutang').innerText = formatRp(totalPiutang); 
-            document.getElementById('dash-paid-count').innerText = paidInvCount;
-
-            if(docsData.length === 0) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tidak ada transaksi di bulan ini.</td></tr>';
-
-        } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: red;">Terjadi kesalahan saat memuat data.</td></tr>'; }
+            tbody.innerHTML += `
+                <tr>
+                    <td>${data.date}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${data.docNo}</td>
+                    <td>${data.clientName}</td>
+                    <td>${badgeTipe}</td>
+                    <td>${formatRp(data.grandTotal)}</td>
+                    <td>${badgeStatus}</td>
+                    <td><div style="display:flex; gap: 5px;">${actionBtn} <button class="btn-small btn-danger" onclick="deleteDocument('${data.docNo}')">Hapus</button></div></td>
+                </tr>`;
+        });
     }
 
     function convertToInvoice(data) {
+        convertingFromDocNo = data.docNo;
         loadToEditor(data);
         document.getElementById('inp-doc-type').value = 'Invoice';
+        generateRandomDocNo();
         changeDocType(); 
         switchTab('editor');
     }
@@ -1193,40 +1005,41 @@
         document.getElementById('inp-client-addr').value = data.clientAddress;
         document.getElementById('inp-discount').value = data.discount || '';
         document.getElementById('inp-tax').value = data.tax || '';
+        document.getElementById('inp-dp').value = data.dp || '';
         
-        if(data.type === 'Invoice') {
-            document.getElementById('dp-title-section').style.display = 'block';
-            document.getElementById('dp-container').style.display = 'block';
-            document.getElementById('inp-dp').value = data.dp || (data.isPaid ? data.grandTotal : '');
-            
-            document.getElementById('prev-doc-title').innerText = "INVOICE";
-            document.getElementById('prev-doc-subtitle').innerText = "Official Receipt";
-        } else {
-            document.getElementById('dp-title-section').style.display = 'none';
-            document.getElementById('dp-container').style.display = 'none';
-            document.getElementById('inp-dp').value = '';
-            
-            document.getElementById('prev-doc-title').innerText = "ESTIMATE";
-            document.getElementById('prev-doc-subtitle').innerText = "Official Quote";
-        }
-
-        items = data.items ? data.items.map(i => ({
-            name: i.name, details: i.details,
-            qty: i.qty === 1 && !i.modifiedQty ? '' : i.qty,
-            price: i.price === 0 && !i.modifiedPrice ? '' : i.price
-        })) : [];
-        if(items.length === 0) items = [{ name: '', details: '', qty: '', price: '' }];
-        
+        items = data.items ? data.items.map(i => ({ name: i.name, details: i.details, qty: i.qty, price: i.price })) : [{ name: '', details: '', qty: '', price: '' }];
         renderItems();
         switchTab('editor');
     }
 
     function fitPaperToScreen() {
-        const rw = 794; const cw = document.querySelector('.preview-panel').offsetWidth; const sc = document.getElementById('preview-scaler');
+        const rw = 794, cw = document.querySelector('.preview-panel').offsetWidth, sc = document.getElementById('preview-scaler');
         if (cw < rw + 40) { const s = cw/rw; sc.style.transform = `scale(${s})`; sc.style.marginBottom = `-${(1-s)*100}%`; }
         else { sc.style.transform = 'scale(1)'; sc.style.marginBottom = '0'; }
     }
     window.addEventListener('resize', fitPaperToScreen);
+
+    function filterByCard(category) {
+        if (category === 'piutang') { document.getElementById('filter-tipe').value = 'Invoice'; document.getElementById('filter-status').value = 'Belum Lunas'; }
+        else if (category === 'lunas') { document.getElementById('filter-tipe').value = 'Invoice'; document.getElementById('filter-status').value = 'Lunas'; }
+        else if (category === 'quotation') { document.getElementById('filter-tipe').value = 'Estimate'; document.getElementById('filter-status').value = 'Semua'; }
+        applyFilters();
+        document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
+    }
+            // --- FUNGSI CETAK PDF (AUTO RENAME) ---
+    function cetakPDF() {
+        const noRefNow = document.getElementById('inp-est-no').value || 'NO-REF';
+        const namaKlienNow = document.getElementById('inp-client-name').value || 'Pelanggan';
+        
+        // Format disesuaikan agar langsung: QT-XXXXX - Nama Pelanggan atau INV-XXXXX - Nama Pelanggan
+        document.title = `${noRefNow} - ${namaKlienNow}`;
+        
+        // Diberi jeda 100ms agar browser (terutama HP/Chrome) sempat membaca judul baru sebelum pop-up Print muncul
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    }
+
 
 </script>
 </body>
