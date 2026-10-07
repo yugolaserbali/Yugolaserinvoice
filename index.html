@@ -876,39 +876,62 @@
     }
 
     async function saveDocumentToDB() {
-        if(!db) return;
-        const docType = document.getElementById('inp-doc-type').value;
-        const docNo = document.getElementById('inp-est-no').value;
-        const cName = document.getElementById('inp-client-name').value;
-        if(!cName) return alert("Nama klien wajib diisi!");
+    if(!db) return;
+    const docType = document.getElementById('inp-doc-type').value;
+    const docNo = document.getElementById('inp-est-no').value;
+    
+    // Ambil data klien dari input
+    const cName = document.getElementById('inp-client-name').value;
+    const cPhone = document.getElementById('inp-client-phone').value;
+    const cAddr = document.getElementById('inp-client-addr').value;
+    
+    if(!cName) return alert("Nama klien wajib diisi!");
 
-        const dDate = document.getElementById('inp-date').value;
-        const grandTotal = parseInt(document.getElementById('prev-grand-total').innerText.replace(/[^0-9,-]+/g,"")) || 0;
-        const dpVal = parseFloat(document.getElementById('inp-dp').value) || 0;
-        let sisaVal = Math.max(0, grandTotal - dpVal);
-        const isPaid = (dpVal >= grandTotal && grandTotal > 0) && (docType === 'Invoice');
+    const dDate = document.getElementById('inp-date').value;
+    const grandTotal = parseInt(document.getElementById('prev-grand-total').innerText.replace(/[^0-9,-]+/g,"")) || 0;
+    const dpVal = parseFloat(document.getElementById('inp-dp').value) || 0;
+    let sisaVal = Math.max(0, grandTotal - dpVal);
+    const isPaid = (dpVal >= grandTotal && grandTotal > 0) && (docType === 'Invoice');
 
-        const payload = {
-            docNo, type: docType, date: dDate, monthYear: dDate.substring(0, 7),
-            clientName: cName, clientPhone: document.getElementById('inp-client-phone').value,
-            clientAddress: document.getElementById('inp-client-addr').value,
-            items: items.map(i => ({ name: i.name, details: i.details, qty: parseFloat(i.qty) || 1, price: parseFloat(i.price) || 0 })),
-            discount: parseFloat(document.getElementById('inp-discount').value) || 0,
-            tax: parseFloat(document.getElementById('inp-tax').value) || 0,
-            dp: dpVal, sisa: sisaVal, grandTotal, isPaid,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+    const payload = {
+        docNo, type: docType, date: dDate, monthYear: dDate.substring(0, 7),
+        clientName: cName, clientPhone: cPhone,
+        clientAddress: cAddr,
+        items: items.map(i => ({ name: i.name, details: i.details, qty: parseFloat(i.qty) || 1, price: parseFloat(i.price) || 0 })),
+        discount: parseFloat(document.getElementById('inp-discount').value) || 0,
+        tax: parseFloat(document.getElementById('inp-tax').value) || 0,
+        dp: dpVal, sisa: sisaVal, grandTotal, isPaid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-        try {
-            await db.collection("documents").doc(docNo).set(payload);
-            if (convertingFromDocNo && convertingFromDocNo.startsWith('QT-') && docType === 'Invoice') {
-                await db.collection("documents").doc(convertingFromDocNo).delete();
-            }
-            convertingFromDocNo = null;
-            alert("Dokumen berhasil disimpan ke database!");
-            fetchClients();
-        } catch(e) { alert("Error: " + e.message); }
+    try {
+        // 1. Simpan Invoice/Quotation ke database
+        await db.collection("documents").doc(docNo).set(payload);
+        
+        // 2. [TAMBAHAN BARU] Simpan Klien ke database agar masuk ke Daftar Klien
+        const clientId = cName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        await db.collection("clients").doc(clientId).set({ 
+            name: cName, 
+            phone: cPhone, 
+            address: cAddr 
+        }, { merge: true }); // merge: true memastikan data tidak tertimpa jika sudah ada
+
+        // Hapus Quotation lama jika ini adalah hasil convert ke Invoice
+        if (convertingFromDocNo && convertingFromDocNo.startsWith('QT-') && docType === 'Invoice') {
+            await db.collection("documents").doc(convertingFromDocNo).delete();
+        }
+        
+        convertingFromDocNo = null;
+        alert("Dokumen & Data Klien berhasil disimpan!");
+        
+        // Refresh daftar klien di memori agar langsung muncul di autocomplete
+        fetchClients(); 
+        
+    } catch(e) { 
+        alert("Error: " + e.message); 
     }
+}
+
     
     async function deleteDocument(docNo) {
         if(confirm(`Hapus permanen dokumen ${docNo}?`)) {
