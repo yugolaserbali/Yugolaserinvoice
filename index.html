@@ -3227,7 +3227,7 @@
                     </div>
 
                     <div style="margin-top: 22px; border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 10px;">
-                        <button type="button" class="btn btn-success" onclick="saveDocumentToDB()">💾 Simpan Dokumen ke Cloud</button>
+                        <button type="button" id="btn-save-doc" class="btn btn-success" onclick="saveDocumentToDB()">💾 Simpan Dokumen ke Cloud</button>
                         <div class="grid-2">
                             <button type="button" class="btn" onclick="downloadPDF()">📥 Download PDF</button>
                             <button type="button" class="btn btn-secondary" onclick="cetakPDF()">🖨️ Print</button>
@@ -3964,6 +3964,7 @@
         let items = [{ name: '', details: '', qty: '', price: '' }];
         let clientsData = [];
         let itemLibraryData = [];
+        let editingDocId = null;
         let convertingFromDocNo = null;
         let linkingOrderId = null;
         let allDocsMonth = [];
@@ -4726,6 +4727,7 @@
             const ord = allOrderTasks.find(o => o.id === id);
             if (!ord) return;
 
+            editingDocId = null;
             convertingFromDocNo = null;
             linkingOrderId = ord.id;
             document.getElementById('convert-banner').style.display = 'none';
@@ -6699,133 +6701,190 @@
         async function saveDocumentToDB() {
             const clientName = document.getElementById('inp-client-name').value.trim();
             if (!clientName) {
-                showToast("Isi nama klien terlebih dahulu!");
+                showToast("⚠️ Isi nama klien terlebih dahulu!");
+                document.getElementById('inp-client-name').focus();
                 return;
             }
-            if (!db || !isCloudReady) {
-                showToast("Mode Offline: tidak dapat menyimpan ke Cloud.");
+            if (!db) {
+                showToast("❌ Koneksi database belum siap. Muat ulang halaman.");
                 return;
             }
 
-            const docNo = document.getElementById('inp-est-no').value.trim();
-            const type = document.getElementById('inp-doc-type').value;
-            const dateStr = document.getElementById('inp-date').value || getLocalTodayStr();
-            const monthYear = dateStr.substring(0, 7);
-            const phone = document.getElementById('inp-client-phone').value.trim();
-            const address = document.getElementById('inp-client-addr').value.trim();
-            const discount = parseFloat(document.getElementById('inp-discount').value) || 0;
-            const taxPct = parseFloat(document.getElementById('inp-tax').value) || 0;
-            const dp = type === 'Estimate' ? 0 : (parseFloat(document.getElementById('inp-dp').value) || 0);
-            const workshopBranch = document.getElementById('inp-workshop-branch')?.value || '';
-
-            const validItems = items.filter(it => it.name.trim() || (parseFloat(it.price) || 0) > 0);
-            const subtotal = validItems.reduce((sum, it) => sum + ((parseFloat(it.qty) || 0) * (parseFloat(it.price) || 0)), 0);
-            const afterDisc = Math.max(0, subtotal - discount);
-            const grandTotal = afterDisc + (afterDisc * (taxPct / 100));
-            const sisa = type === 'Estimate' ? grandTotal : Math.max(0, grandTotal - dp);
-            const isPaid = type === 'Invoice' && grandTotal > 0 && sisa <= 0;
-            const nowMs = Date.now();
-
-            const docData = {
-                docNo,
-                type,
-                date: dateStr,
-                monthYear,
-                client: clientName,
-                phone,
-                address,
-                items: validItems,
-                discount,
-                taxPct,
-                dp,
-                grandTotal,
-                sisa,
-                isPaid,
-                workshopBranch,
-                updatedAtMs: nowMs
-            };
+            const btnSave = document.getElementById('btn-save-doc');
+            const origBtnHtml = btnSave ? btnSave.innerHTML : '💾 Simpan Dokumen ke Cloud';
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.innerHTML = '⏳ Menyimpan ke Cloud...';
+            }
 
             try {
-                await db.collection("documents").doc(docNo).set(docData);
+                let docNo = document.getElementById('inp-est-no').value.trim();
+                if (!docNo) {
+                    generateRandomDocNo();
+                    docNo = document.getElementById('inp-est-no').value.trim();
+                }
+                const safeDocId = docNo.replace(/\//g, '-');
 
-                if (convertingFromDocNo && convertingFromDocNo !== docNo && type === 'Invoice') {
-                    await db.collection("documents").doc(convertingFromDocNo).delete();
+                const type = document.getElementById('inp-doc-type').value;
+                const dateStr = document.getElementById('inp-date').value || getLocalTodayStr();
+                const monthYear = dateStr.substring(0, 7);
+                const phone = document.getElementById('inp-client-phone').value.trim();
+                const address = document.getElementById('inp-client-addr').value.trim();
+                const discount = parseFloat(document.getElementById('inp-discount').value) || 0;
+                const taxPct = parseFloat(document.getElementById('inp-tax').value) || 0;
+                const dp = type === 'Estimate' ? 0 : (parseFloat(document.getElementById('inp-dp').value) || 0);
+                const workshopBranch = document.getElementById('inp-workshop-branch')?.value || '';
+
+                const validItems = items.filter(it => (it.name && it.name.trim()) || (parseFloat(it.price) || 0) > 0);
+                const subtotal = validItems.reduce((sum, it) => sum + ((parseFloat(it.qty) || 0) * (parseFloat(it.price) || 0)), 0);
+                const afterDisc = Math.max(0, subtotal - discount);
+                const grandTotal = afterDisc + (afterDisc * (taxPct / 100));
+                const sisa = type === 'Estimate' ? grandTotal : Math.max(0, grandTotal - dp);
+                const isPaid = type === 'Invoice' && grandTotal > 0 && sisa <= 0;
+                const nowMs = Date.now();
+
+                const docData = {
+                    docNo,
+                    type,
+                    date: dateStr,
+                    monthYear,
+                    client: clientName,
+                    phone,
+                    address,
+                    items: validItems,
+                    discount,
+                    taxPct,
+                    dp,
+                    grandTotal,
+                    sisa,
+                    isPaid,
+                    workshopBranch,
+                    updatedAtMs: nowMs
+                };
+
+                await db.collection("documents").doc(safeDocId).set(docData);
+                setSyncStatus(true, "Cloud Aktif");
+
+                // Hapus dokumen lama jika nomor referensi berubah saat edit atau konversi dari Estimate
+                if (editingDocId && editingDocId !== safeDocId) {
+                    try {
+                        await db.collection("documents").doc(editingDocId).delete();
+                    } catch (delErr) {
+                        console.warn("Cleanup old edited doc:", delErr);
+                    }
+                }
+                editingDocId = safeDocId;
+
+                if (convertingFromDocNo && convertingFromDocNo !== safeDocId && type === 'Invoice') {
+                    try {
+                        await db.collection("documents").doc(convertingFromDocNo.replace(/\//g, '-')).delete();
+                    } catch (convErr) {
+                        console.warn("Cleanup converted estimate:", convErr);
+                    }
                     convertingFromDocNo = null;
                     document.getElementById('convert-banner').style.display = 'none';
                 }
 
-                // Auto-save Client
-                const existingClient = clientsData.find(c => (c.name || '').toLowerCase() === clientName.toLowerCase());
-                const clientDocId = existingClient ? existingClient.id : clientName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                await db.collection("clients").doc(clientDocId).set({
-                    name: clientName,
-                    phone: phone || (existingClient ? existingClient.phone : ''),
-                    address: address || (existingClient ? existingClient.address : '')
-                }, { merge: true });
-
-                // Auto-save Items to Catalog
-                for (const it of validItems) {
-                    if (it.name && it.name.trim()) {
-                        const itemDocId = it.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-                        await db.collection("items").doc(itemDocId).set({
-                            name: it.name.trim(),
-                            details: it.details || '',
-                            price: parseFloat(it.price) || 0
+                // Auto-save Client (non-blocking)
+                try {
+                    const existingClient = clientsData.find(c => (c.name || '').toLowerCase() === clientName.toLowerCase());
+                    const clientDocId = existingClient ? existingClient.id : clientName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    if (clientDocId) {
+                        await db.collection("clients").doc(clientDocId).set({
+                            name: clientName,
+                            phone: phone || (existingClient ? existingClient.phone : ''),
+                            address: address || (existingClient ? existingClient.address : '')
                         }, { merge: true });
                     }
+                } catch (cErr) {
+                    console.warn("Auto-save client warning:", cErr);
+                }
+
+                // Auto-save Items to Catalog (non-blocking)
+                try {
+                    for (const it of validItems) {
+                        if (it.name && it.name.trim()) {
+                            const itemDocId = it.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                            if (itemDocId) {
+                                await db.collection("items").doc(itemDocId).set({
+                                    name: it.name.trim(),
+                                    details: it.details || '',
+                                    price: parseFloat(it.price) || 0
+                                }, { merge: true });
+                            }
+                        }
+                    }
+                } catch (iErr) {
+                    console.warn("Auto-save items warning:", iErr);
                 }
 
                 // Auto-Sync to Live List Order when saved as Invoice
                 if (type === 'Invoice') {
-                    const orderSummary = validItems.map(i => `${i.name}${i.details ? ' (' + i.details + ')' : ''} x${i.qty || 1}`).join('\n');
-                    const ordPrio = taxPct > 0 ? 'express' : 'standard';
+                    try {
+                        const orderSummary = validItems.map(i => `${i.name}${i.details ? ' (' + i.details + ')' : ''} x${i.qty || 1}`).join('\n');
+                        const ordPrio = taxPct > 0 ? 'express' : 'standard';
 
-                    if (linkingOrderId) {
-                        const ordUpdate = {
-                            clientName,
-                            description: orderSummary || `Order Invoice ${docNo}`,
-                            priority: ordPrio,
-                            invoiceRef: docNo,
-                            updatedAtMs: nowMs,
-                            updatedBy: currentUserEmail.split('@')[0]
-                        };
-                        if (workshopBranch) ordUpdate.branch = workshopBranch;
-                        await db.collection("orders").doc(linkingOrderId).set(ordUpdate, { merge: true });
-                        linkingOrderId = null;
-                    } else {
-                        const existingOrd = allOrderTasks.find(o => o.invoiceRef === docNo);
-                        if (!existingOrd) {
-                            await db.collection("orders").add({
+                        if (linkingOrderId) {
+                            const ordUpdate = {
                                 clientName,
                                 description: orderSummary || `Order Invoice ${docNo}`,
                                 priority: ordPrio,
-                                branch: workshopBranch,
                                 invoiceRef: docNo,
-                                checked: false,
-                                createdAtMs: nowMs,
                                 updatedAtMs: nowMs,
                                 updatedBy: currentUserEmail.split('@')[0]
-                            });
-                        } else if (workshopBranch && existingOrd.branch !== workshopBranch) {
-                            await db.collection("orders").doc(existingOrd.id).update({
-                                branch: workshopBranch,
-                                updatedAtMs: nowMs
-                            });
+                            };
+                            if (workshopBranch) ordUpdate.branch = workshopBranch;
+                            await db.collection("orders").doc(linkingOrderId).set(ordUpdate, { merge: true });
+                            linkingOrderId = null;
+                        } else {
+                            const existingOrd = allOrderTasks.find(o => o.invoiceRef === docNo);
+                            if (!existingOrd) {
+                                await db.collection("orders").add({
+                                    clientName,
+                                    description: orderSummary || `Order Invoice ${docNo}`,
+                                    priority: ordPrio,
+                                    branch: workshopBranch,
+                                    invoiceRef: docNo,
+                                    checked: false,
+                                    createdAtMs: nowMs,
+                                    updatedAtMs: nowMs,
+                                    updatedBy: currentUserEmail.split('@')[0]
+                                });
+                            } else {
+                                const updOrd = {
+                                    clientName,
+                                    description: orderSummary || existingOrd.description,
+                                    priority: ordPrio,
+                                    updatedAtMs: nowMs
+                                };
+                                if (workshopBranch) updOrd.branch = workshopBranch;
+                                await db.collection("orders").doc(existingOrd.id).update(updOrd);
+                            }
                         }
+                    } catch (oErr) {
+                        console.warn("Auto-sync order warning:", oErr);
                     }
                 }
 
                 fetchClients();
                 fetchItemsCatalog();
+                fetchDocuments();
                 showToast(type === 'Invoice'
-                    ? `Invoice (${docNo}) disimpan & masuk ke List Order Live!`
-                    : `Estimate (${docNo}) berhasil disimpan ke Cloud!`);
+                    ? `✅ Invoice (${docNo}) disimpan & diperbarui ke Cloud!`
+                    : `✅ Estimate (${docNo}) berhasil disimpan ke Cloud!`);
             } catch (e) {
-                showToast("Gagal menyimpan: " + e.message);
+                console.error("Save document error:", e);
+                showToast("❌ Gagal menyimpan: " + (e.message || e));
+            } finally {
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = origBtnHtml;
+                }
             }
         }
 
         function resetForm() {
+            editingDocId = null;
             convertingFromDocNo = null;
             linkingOrderId = null;
             document.getElementById('convert-banner').style.display = 'none';
@@ -7337,6 +7396,7 @@
 
         function loadToEditor(data) {
             if (!data) return;
+            editingDocId = data.id || data.docNo || null;
             convertingFromDocNo = null;
             linkingOrderId = null;
 
@@ -7370,6 +7430,7 @@
 
         function duplicateDocument(data) {
             loadToEditor(data);
+            editingDocId = null;
             generateRandomDocNo();
             document.getElementById('inp-date').value = getLocalTodayStr();
             document.getElementById('inp-dp').value = '';
