@@ -3050,14 +3050,14 @@
                         <div id="preview-scaler">
                             <div id="invoice-paper">
                                 <div class="paper-top-accent"></div>
-                                <img class="watermark-bg" src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Watermark" onerror="this.style.display='none'">
+                                <img class="watermark-bg" crossorigin="anonymous" src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Watermark" onerror="this.style.display='none'">
                                 <div id="stamp-lunas" class="lunas-stamp">LUNAS</div>
 
                                 <!-- HEADER ELEGAN MAROON -->
                                 <div class="invoice-header-bg">
                                     <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 3;">
                                         <div style="display: flex; align-items: center; gap: 20px;">
-                                            <img src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Logo Yugo Laser" style="width: 115px; height: 115px; object-fit: contain; background: white; border-radius: 50%; padding: 4px; border: 2px solid #ffd700;" onerror="this.style.display='none'">
+                                            <img crossorigin="anonymous" src="https://i.ibb.co.com/N6b6gv6P/1769144612366.png" alt="Logo Yugo Laser" style="width: 115px; height: 115px; object-fit: contain; background: white; border-radius: 50%; padding: 4px; border: 2px solid #ffd700;" onerror="this.style.display='none'">
                                             <div class="company-details" style="text-align: left;">
                                                 <h1 style="margin: 0; font-size: 28pt; font-weight: 900; color: #fff;">Yugo Laser Bali</h1>
                                                 <p style="margin: 2px 0 8px 0; font-size: 12pt; font-weight: 700; color: #ffd700;">Laser Cutting and Engraving Service</p>
@@ -3120,7 +3120,7 @@
                                     </div>
                                     <div style="flex: 1; text-align: right;">
                                         <h4 style="margin: 0 0 4px 0; color:#000; font-size: 18pt;">Scan QRIS for Payment</h4>
-                                        <img src="https://github.com/yugolaserbali/Asset-yugo-laser/raw/refs/heads/main/Qris_yugolaser.jpg" alt="QRIS" style="width: 245px; height: auto; border-radius: 10px; border: 2px solid #ccc;" onerror="this.style.display='none'">
+                                        <img crossorigin="anonymous" src="https://github.com/yugolaserbali/Asset-yugo-laser/raw/refs/heads/main/Qris_yugolaser.jpg" alt="QRIS" style="width: 245px; height: auto; border-radius: 10px; border: 2px solid #ccc;" onerror="this.style.display='none'">
                                     </div>
                                 </div>
 
@@ -3486,6 +3486,7 @@
         let clientsData = [];
         let itemLibraryData = [];
         let convertingFromDocNo = null;
+        let linkingOrderId = null;
         let allDocsMonth = [];
 
         // List Order Board State
@@ -3884,7 +3885,8 @@
 
             if (showPaper) {
                 updatePreview();
-                setTimeout(fitPaperToScreen, 40);
+                requestAnimationFrame(fitPaperToScreen);
+                setTimeout(fitPaperToScreen, 60);
             }
         }
 
@@ -4121,6 +4123,7 @@
             if (!ord) return;
 
             convertingFromDocNo = null;
+            linkingOrderId = ord.id;
             document.getElementById('convert-banner').style.display = 'none';
             document.getElementById('inp-doc-type').value = 'Estimate';
             generateRandomDocNo();
@@ -4128,6 +4131,8 @@
             document.getElementById('inp-date').value = getLocalTodayStr();
             document.getElementById('inp-client-name').value = ord.clientName || '';
             document.getElementById('inp-tax').value = ord.priority === 'express' ? '25' : '';
+            const branchSel = document.getElementById('inp-workshop-branch');
+            if (branchSel) branchSel.value = ord.branch || '';
 
             const matchedClient = clientsData.find(c => (c.name || '').toLowerCase() === (ord.clientName || '').toLowerCase());
             document.getElementById('inp-client-phone').value = matchedClient ? (matchedClient.phone || '') : '';
@@ -4628,6 +4633,10 @@
             document.getElementById('lbl-box-l').textContent = isHamster ? 'Lebar (Samping)' : 'Lebar';
 
             lastBoxCalc = null;
+            document.getElementById("res-box-row-plywood").style.display = isHamster ? "flex" : "none";
+            document.getElementById("res-box-row-akrilik").style.display = isHamster ? "flex" : "none";
+            document.getElementById("res-box-row-bahan-std").style.display = isHamster ? "none" : "flex";
+            document.getElementById("res-box-badge").textContent = isHamster ? "MIX HAMSTER • 1 PCS" : `${modelBoxSisi} SISI • 1 PCS`;
             autoHitungBox();
         }
 
@@ -5245,6 +5254,7 @@
             });
             if (!ok) return;
             convertingFromDocNo = null;
+            linkingOrderId = null;
             document.getElementById('convert-banner').style.display = 'none';
             document.getElementById('inp-client-name').value = '';
             document.getElementById('inp-client-phone').value = '';
@@ -5360,6 +5370,8 @@
                         year: 'numeric'
                     });
                 }
+            } else {
+                document.getElementById('prev-date').innerText = '---';
             }
 
             document.getElementById('prev-client-name').innerText = document.getElementById('inp-client-name').value || '-';
@@ -5567,6 +5579,11 @@
 
             document.addEventListener("click", function(e) {
                 if (e.target !== input) list.style.display = "none";
+                if (!e.target.closest('.form-group')) {
+                    document.querySelectorAll('.autocomplete-items').forEach(el => {
+                        el.style.display = "none";
+                    });
+                }
             });
         }
 
@@ -5822,19 +5839,15 @@
                 await db.collection("documents").doc(docNo).set(payload);
 
                 const clientId = cName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || ('client_' + Date.now());
-                await db.collection("clients").doc(clientId).set({
-                    name: cName,
-                    phone: cPhone,
-                    address: cAddr
-                }, { merge: true });
-
-                if (convertingFromDocNo && convertingFromDocNo !== docNo && convertingFromDocNo.startsWith('QT-') && docType === 'Invoice') {
+                if (convertingFromDocNo && convertingFromDocNo !== docNo && docType === 'Invoice') {
                     await db.collection("documents").doc(convertingFromDocNo).delete();
                 }
 
                 // Auto-sync Invoice to Workshop List Order board
                 if (docType === 'Invoice') {
-                    const existingOrder = allOrderTasks.find(o => o.invoiceRef === docNo);
+                    const existingOrder = allOrderTasks.find(o => o.invoiceRef === docNo)
+                        || (linkingOrderId ? allOrderTasks.find(o => o.id === linkingOrderId) : null);
+
                     if (!existingOrder) {
                         const summaryText = cleanedItems
                             .filter(it => it.name)
@@ -5851,15 +5864,19 @@
                             updatedAtMs: Date.now(),
                             updatedBy: currentUserEmail.split('@')[0]
                         });
-                    } else if (selectedWorkshopBranch) {
-                        await db.collection("orders").doc(existingOrder.id).update({
+                    } else {
+                        const orderUpdates = {
+                            invoiceRef: docNo,
                             branch: selectedWorkshopBranch,
                             updatedAtMs: Date.now()
-                        });
+                        };
+                        if (taxPct > 0) orderUpdates.priority = 'express';
+                        await db.collection("orders").doc(existingOrder.id).update(orderUpdates);
                     }
                 }
 
                 convertingFromDocNo = null;
+                linkingOrderId = null;
                 document.getElementById('convert-banner').style.display = 'none';
                 showToast(`✅ ${docType} (${docNo}) tersimpan!`);
                 fetchClients();
@@ -5908,11 +5925,18 @@
         }
 
         async function fetchDocuments() {
-            if (!db || !isCloudReady) return;
+            if (!db || !isCloudReady) {
+                renderHistoryTable([]);
+                return;
+            }
             const selectedMonth = document.getElementById('filter-month').value || getLocalMonthStr();
             try {
                 const snapshot = await db.collection("documents").where("monthYear", "==", selectedMonth).get();
-                allDocsMonth = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
+                allDocsMonth = snapshot.docs.map(doc => doc.data()).sort((a, b) => {
+                    const cmpDate = (b.date || '').localeCompare(a.date || '');
+                    if (cmpDate !== 0) return cmpDate;
+                    return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+                });
 
                 let uangMasuk = 0, grossIncome = 0, totalPiutang = 0, paidInvCount = 0, quotationCount = 0;
                 allDocsMonth.forEach(data => {
@@ -6173,6 +6197,7 @@
         function duplicateDocument(data) {
             loadToEditor(data);
             convertingFromDocNo = null;
+            linkingOrderId = null;
             document.getElementById('convert-banner').style.display = 'none';
             document.getElementById('inp-date').value = getLocalTodayStr();
             document.getElementById('inp-dp').value = '';
@@ -6183,6 +6208,7 @@
 
         function loadToEditor(data) {
             convertingFromDocNo = null;
+            linkingOrderId = null;
             document.getElementById('convert-banner').style.display = 'none';
             document.getElementById('inp-doc-type').value = data.type || 'Estimate';
             document.getElementById('inp-est-no').value = data.docNo || '';
