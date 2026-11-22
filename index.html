@@ -3441,7 +3441,7 @@
                                 <input type="checkbox" id="exp-sync-stock" checked onchange="document.getElementById('banner-sync-stock').classList.toggle('checked', this.checked)">
                             </label>
 
-                            <button type="button" class="btn btn-orange" onclick="saveExpenseRecord()">💾 Simpan Pengeluaran Belanja</button>
+                            <button type="button" id="btn-save-expense" class="btn btn-orange" onclick="saveExpenseRecord()">💾 Simpan Pengeluaran Belanja</button>
                         </div>
 
                         <!-- Riwayat Belanja Bahan Bulan Ini -->
@@ -3652,7 +3652,7 @@
                                     <div style="font-weight: 800; font-size: 0.98rem; color: #c4b5fd;">📦 STOK OPNAME MATERIAL WORKSHOP</div>
                                     <div id="stock-summary-subtitle" style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">Lembaran 85×61 &amp; 61×74 otomatis digabung per jenis bahan</div>
                                 </div>
-                                <button type="button" class="btn-small btn-success" onclick="toggleStockFormBox()">➕ Tambah / Edit Item</button>
+                                <button type="button" class="btn-small btn-success" onclick="openNewStockForm()">➕ Tambah Item</button>
                             </div>
 
                             <!-- Collapsible Form Tambah / Edit Material Stok -->
@@ -3802,7 +3802,7 @@
                 Copy &amp; paste seluruh teks daftar order dari Google Keep Anda di bawah ini. Sistem otomatis memisahkan bagian <strong>EXPRESS SERVICE</strong> dan <strong>Standard service</strong>.
             </p>
             <textarea id="notes-import-text" rows="8" placeholder="Contoh:&#10;EXPRESS SERVICE&#10;Befi M : custom Ornamen Akrilik 3mm uv print.&#10;&#10;Standard service&#10;Dayu widi : sign custom akrilik 3mm." style="margin-bottom: 12px;"></textarea>
-            <button type="button" class="btn btn-success" onclick="processGoogleNotesImport()">🚀 Masukkan Semua ke List Order</button>
+            <button type="button" id="btn-import-notes" class="btn btn-success" onclick="processGoogleNotesImport()">🚀 Masukkan Semua ke List Order</button>
         </div>
     </div>
 
@@ -4901,53 +4901,62 @@
                 return;
             }
 
-            const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-            let currentPrio = 'standard';
-            const parsedItems = [];
-
-            lines.forEach(line => {
-                const lower = line.toLowerCase();
-                if (lower.includes('list order yugo')) return;
-                if (lower.includes('express service')) {
-                    currentPrio = 'express';
-                    return;
-                }
-                if (lower.includes('standard service')) {
-                    currentPrio = 'standard';
-                    return;
-                }
-
-                let clientName = 'Order Umum';
-                let desc = line;
-                const colonIdx = line.indexOf(':');
-                if (colonIdx > 0 && colonIdx < 36) {
-                    clientName = line.substring(0, colonIdx).trim();
-                    desc = line.substring(colonIdx + 1).trim();
-                }
-
-                let detectedBranch = '';
-                if (lower.includes('dalung')) detectedBranch = 'dalung';
-                else if (lower.includes('abianbase')) detectedBranch = 'abianbase';
-
-                parsedItems.push({
-                    clientName,
-                    description: desc,
-                    priority: currentPrio,
-                    branch: detectedBranch,
-                    invoiceRef: '',
-                    checked: false,
-                    createdAtMs: Date.now() - parsedItems.length * 100,
-                    updatedAtMs: Date.now(),
-                    updatedBy: currentUserEmail.split('@')[0]
-                });
-            });
-
-            if (parsedItems.length === 0) {
-                showToast("Tidak ada baris order yang terbaca.");
-                return;
+            const btn = document.getElementById('btn-import-notes');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Mengimpor Order...';
             }
 
             try {
+                const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+                let currentPrio = 'standard';
+                const parsedItems = [];
+
+                lines.forEach(line => {
+                    const cleanLine = line.replace(/^[-•*▪▫]\s*/, '').trim();
+                    if (!cleanLine) return;
+                    const lower = cleanLine.toLowerCase();
+                    if (lower.includes('list order yugo')) return;
+                    if (lower === 'express' || lower.includes('express service')) {
+                        currentPrio = 'express';
+                        return;
+                    }
+                    if (lower === 'standard' || lower.includes('standard service')) {
+                        currentPrio = 'standard';
+                        return;
+                    }
+
+                    let clientName = 'Order Umum';
+                    let desc = cleanLine;
+                    const colonIdx = cleanLine.indexOf(':');
+                    if (colonIdx > 0 && colonIdx < 40) {
+                        clientName = cleanLine.substring(0, colonIdx).trim();
+                        desc = cleanLine.substring(colonIdx + 1).trim() || '-';
+                    }
+
+                    let detectedBranch = '';
+                    if (lower.includes('dalung')) detectedBranch = 'dalung';
+                    else if (lower.includes('abianbase')) detectedBranch = 'abianbase';
+
+                    parsedItems.push({
+                        clientName,
+                        description: desc,
+                        priority: currentPrio,
+                        branch: detectedBranch,
+                        invoiceRef: '',
+                        checked: false,
+                        createdAtMs: Date.now() - parsedItems.length * 100,
+                        updatedAtMs: Date.now(),
+                        updatedBy: currentUserEmail.split('@')[0]
+                    });
+                });
+
+                if (parsedItems.length === 0) {
+                    showToast("Tidak ada baris order yang terbaca.");
+                    return;
+                }
+
                 if (db && isCloudReady) {
                     const batch = db.batch();
                     parsedItems.forEach(item => {
@@ -4963,9 +4972,14 @@
                 }
                 document.getElementById('notes-import-text').value = '';
                 closeNotesImportModal();
-                showToast(`${parsedItems.length} order berhasil diimpor ke List Order!`);
+                showToast(`✅ ${parsedItems.length} order berhasil diimpor ke List Order!`);
             } catch (e) {
                 showToast("Gagal impor: " + e.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
             }
         }
 
@@ -5898,6 +5912,13 @@
                 return;
             }
 
+            const btnExp = document.getElementById('btn-save-expense');
+            const origExpHtml = btnExp ? btnExp.innerHTML : '💾 Simpan Pengeluaran Belanja';
+            if (btnExp) {
+                btnExp.disabled = true;
+                btnExp.innerHTML = '⏳ Menyimpan Belanja...';
+            }
+
             const isAutoSplitSheet = (category === 'lembaran' && buyMode === 'lembar_utuh');
             const splitPlan = isAutoSplitSheet ? getSheetSplitPlan(branch, qty) : [];
             const unitLabel = isAutoSplitSheet ? 'Lembar Utuh (244×122)' : customUnit;
@@ -5925,8 +5946,9 @@
             };
 
             try {
-                if (db && isCloudReady) {
+                if (db) {
                     await db.collection("expenses").add(payload);
+                    setSyncStatus(true, "Cloud Aktif");
                 } else {
                     allExpensesMonth.unshift({ id: 'loc-exp-' + Date.now(), ...payload });
                     try { localStorage.setItem('yl_offline_expenses', JSON.stringify(allExpensesMonth)); } catch (e) {}
@@ -5962,7 +5984,7 @@
                 document.getElementById('exp-note').value = '';
                 updateExpenseSplitPreview();
 
-                if (!isCloudReady) {
+                if (!db) {
                     renderStockBoard();
                     renderExpensesList();
                 } else {
@@ -5976,6 +5998,11 @@
                     : `✅ Pengeluaran belanja bahan tersimpan!`);
             } catch (e) {
                 showToast("Gagal simpan belanja: " + e.message);
+            } finally {
+                if (btnExp) {
+                    btnExp.disabled = false;
+                    btnExp.innerHTML = origExpHtml;
+                }
             }
         }
 
@@ -6083,6 +6110,17 @@
             const nextState = forceShow !== null ? forceShow : (box.style.display === 'none');
             box.style.display = nextState ? 'block' : 'none';
             if (!nextState) resetStockFormFields();
+        }
+
+        function openNewStockForm() {
+            const box = document.getElementById('stock-form-box');
+            const isEditing = Boolean(document.getElementById('stk-edit-id').value);
+            if (box && box.style.display === 'block' && !isEditing) {
+                closeAndResetStockForm();
+                return;
+            }
+            resetStockFormFields();
+            if (box) box.style.display = 'block';
         }
 
         function resetStockFormFields() {
@@ -7298,17 +7336,17 @@
                     mobileBtns += `<button type="button" class="btn-small" style="background:var(--accent-purple);" onclick="convertEstimateToInvoice('${data.id}')">⚡ Jadi Invoice</button>`;
                 }
 
-                const encoded = encodeURIComponent(JSON.stringify(data));
+                const safeId = escapeHtml(data.id);
                 actionBtns += `
-                    <button type="button" class="btn-small" style="background:var(--primary);" onclick="loadToEditor(JSON.parse(decodeURIComponent('${encoded}')))">Buka</button>
-                    <button type="button" class="btn-small btn-secondary" onclick="duplicateDocument(JSON.parse(decodeURIComponent('${encoded}')))" title="Duplikat">📋</button>
-                    <button type="button" class="btn-small btn-danger-outline" onclick="deleteDoc('${data.id}')">🗑️</button>
+                    <button type="button" class="btn-small" style="background:var(--primary);" onclick="openDocById('${safeId}')">Buka</button>
+                    <button type="button" class="btn-small btn-secondary" onclick="duplicateDocById('${safeId}')" title="Duplikat">📋</button>
+                    <button type="button" class="btn-small btn-danger-outline" onclick="deleteDoc('${safeId}')">🗑️</button>
                 `;
 
                 mobileBtns += `
-                    <button type="button" class="btn-small" style="background:var(--primary);" onclick="loadToEditor(JSON.parse(decodeURIComponent('${encoded}')))">✏️ Buka Nota</button>
-                    <button type="button" class="btn-small btn-secondary" onclick="duplicateDocument(JSON.parse(decodeURIComponent('${encoded}')))">📋 Duplikat</button>
-                    <button type="button" class="btn-small btn-danger-outline" onclick="deleteDoc('${data.id}')">🗑️ Hapus</button>
+                    <button type="button" class="btn-small" style="background:var(--primary);" onclick="openDocById('${safeId}')">✏️ Buka Nota</button>
+                    <button type="button" class="btn-small btn-secondary" onclick="duplicateDocById('${safeId}')">📋 Duplikat</button>
+                    <button type="button" class="btn-small btn-danger-outline" onclick="deleteDoc('${safeId}')">🗑️ Hapus</button>
                 `;
 
                 const ringkasan = (data.items || []).map(i => i.name).filter(Boolean).join(', ');
@@ -7387,11 +7425,34 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            a.style.display = 'none';
             a.href = url;
             a.download = `Laporan_YugoLaser_${document.getElementById('filter-month').value}.csv`;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 250);
             showToast("File CSV laporan berhasil diunduh!");
+        }
+
+        function openDocById(docId) {
+            const found = allDocsMonth.find(d => d.id === docId);
+            if (!found) {
+                showToast("Dokumen tidak ditemukan. Coba tekan tombol 🔄 refresh.");
+                return;
+            }
+            loadToEditor(found);
+        }
+
+        function duplicateDocById(docId) {
+            const found = allDocsMonth.find(d => d.id === docId);
+            if (!found) {
+                showToast("Dokumen tidak ditemukan.");
+                return;
+            }
+            duplicateDocument(found);
         }
 
         function loadToEditor(data) {
