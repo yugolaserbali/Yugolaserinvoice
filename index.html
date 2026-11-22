@@ -5840,12 +5840,12 @@
             }
         }
 
-        async function addOrIncrementStockItem({ branch, category, name, size, addQty, unit }) {
+        function queueOrApplyStockIncrement({ branch, category, name, size, addQty, unit }, batch, nowMs) {
             const targetBranch = (branch === 'dalung' || branch === 'abianbase' || branch === 'umum') ? branch : 'umum';
             const cleanName = (name || 'Material').trim();
             const cleanSize = (size || '').trim();
             const cleanUnit = (unit || 'Pcs').trim();
-            const nowMs = Date.now();
+            const userTag = currentUserEmail.split('@')[0];
 
             const existing = allStockItems.find(s =>
                 (s.branch || '') === targetBranch &&
@@ -5856,16 +5856,15 @@
 
             if (existing) {
                 const nextQty = Math.max(0, Number(existing.qty || 0) + Number(addQty || 0));
-                if (db && isCloudReady) {
-                    await db.collection("stockItems").doc(existing.id).update({
+                existing.qty = nextQty;
+                existing.updatedAtMs = nowMs;
+                if (db && batch) {
+                    const ref = db.collection("stockItems").doc(existing.id);
+                    batch.update(ref, {
                         qty: nextQty,
                         updatedAtMs: nowMs,
-                        updatedBy: currentUserEmail.split('@')[0]
+                        updatedBy: userTag
                     });
-                } else {
-                    existing.qty = nextQty;
-                    existing.updatedAtMs = nowMs;
-                    saveOfflineStockCache();
                 }
             } else {
                 const newDoc = {
@@ -5879,13 +5878,13 @@
                     lastOpnameAtMs: nowMs,
                     lastOpnameNote: 'Masuk dari Belanja Bahan',
                     updatedAtMs: nowMs,
-                    updatedBy: currentUserEmail.split('@')[0]
+                    updatedBy: userTag
                 };
-                if (db && isCloudReady) {
-                    await db.collection("stockItems").add(newDoc);
+                if (db && batch) {
+                    const ref = db.collection("stockItems").doc();
+                    batch.set(ref, newDoc);
                 } else {
                     allStockItems.push({ id: 'loc-stk-' + nowMs + Math.random().toString(36).slice(2, 6), ...newDoc });
-                    saveOfflineStockCache();
                 }
             }
         }
@@ -5916,9 +5915,10 @@
             const origExpHtml = btnExp ? btnExp.innerHTML : '💾 Simpan Pengeluaran Belanja';
             if (btnExp) {
                 btnExp.disabled = true;
-                btnExp.innerHTML = '⏳ Menyimpan Belanja...';
+                btnExp.innerHTML = '⏳ Menyimpan...';
             }
 
+            const nowMs = Date.now();
             const isAutoSplitSheet = (category === 'lembaran' && buyMode === 'lembar_utuh');
             const splitPlan = isAutoSplitSheet ? getSheetSplitPlan(branch, qty) : [];
             const unitLabel = isAutoSplitSheet ? 'Lembar Utuh (244×122)' : customUnit;
@@ -5941,56 +5941,92 @@
                 amount,
                 syncStock,
                 note,
-                createdAtMs: Date.now(),
+                createdAtMs: nowMs,
                 createdBy: currentUserEmail.split('@')[0]
             };
 
             try {
+                let savedDocId = 'loc-exp-' + nowMs;
+
                 if (db) {
-                    await db.collection("expenses").add(payload);
+                    const batch = db.batch();
+                    const expRef = db.collection("expenses").doc();
+                    savedDocId = expRef.id;
+                    batch.set(expRef, payload);
+
+                    if (syncStock) {
+                        if (isAutoSplitSheet) {
+                            splitPlan.forEach(part => {
+                                queueOrApplyStockIncrement({
+                                    branch,
+                                    category: 'lembaran',
+                                    name: itemName,
+                                    size: part.size,
+                                    addQty: part.addQty,
+                                    unit: part.unit
+                                }, batch, nowMs);
+                            });
+                        } else {
+                            queueOrApplyStockIncrement({
+                                branch,
+                                category,
+                                name: itemName,
+                                size: '',
+                                addQty: qty,
+                                unit: customUnit
+                            }, batch, nowMs);
+                        }
+                    }
+
+                    await batch.commit();
                     setSyncStatus(true, "Cloud Aktif");
                 } else {
-                    allExpensesMonth.unshift({ id: 'loc-exp-' + Date.now(), ...payload });
-                    try { localStorage.setItem('yl_offline_expenses', JSON.stringify(allExpensesMonth)); } catch (e) {}
-                }
-
-                if (syncStock) {
-                    if (isAutoSplitSheet) {
-                        for (const part of splitPlan) {
-                            await addOrIncrementStockItem({
-                                branch,
-                                category: 'lembaran',
-                                name: itemName,
-                                size: part.size,
-                                addQty: part.addQty,
-                                unit: part.unit
+                    if (syncStock) {
+                        if (isAutoSplitSheet) {
+                            splitPlan.forEach(part => {
+                                queueOrApplyStockIncrement({
+                                    branch,
+                                    category: 'lembaran',
+                                    name: itemName,
+                                    size: part.size,
+                                    addQty: part.addQty,
+                                    unit: part.unit
+                                }, null, nowMs);
                             });
+                        } else {
+                            queueOrApplyStockIncrement({
+                                branch,
+                                category,
+                                name: itemName,
+                                size: '',
+                                addQty: qty,
+                                unit: customUnit
+                            }, null, nowMs);
                         }
-                    } else {
-                        await addOrIncrementStockItem({
-                            branch,
-                            category,
-                            name: itemName,
-                            size: '',
-                            addQty: qty,
-                            unit: customUnit
-                        });
+                        saveOfflineStockCache();
                     }
                 }
 
+                // Reset form segera
                 document.getElementById('exp-item-name').value = '';
                 document.getElementById('exp-qty').value = '1';
                 document.getElementById('exp-amount').value = '';
                 document.getElementById('exp-note').value = '';
                 updateExpenseSplitPreview();
 
-                if (!db) {
-                    renderStockBoard();
+                // Update tampilan lokal seketika tanpa menunggu roundtrip server kedua
+                const curFilterMonth = document.getElementById('exp-filter-month')?.value || getLocalMonthStr();
+                if (payload.monthYear === curFilterMonth) {
+                    allExpensesMonth.unshift({ id: savedDocId, ...payload });
                     renderExpensesList();
                 } else {
                     document.getElementById('exp-filter-month').value = payload.monthYear;
                     fetchExpenses();
-                    fetchDocuments();
+                }
+
+                if (!db) {
+                    try { localStorage.setItem('yl_offline_expenses', JSON.stringify(allExpensesMonth)); } catch (e) {}
+                    renderStockBoard();
                 }
 
                 showToast(syncStock
